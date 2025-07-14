@@ -48,6 +48,18 @@ class Investor extends BaseModel
         return $this->update($id, $data);
     }
 
+    /**
+     * Safely decode JSON, handling null values
+     */
+    private function safeJsonDecode($json)
+    {
+        if ($json === null || $json === '') {
+            return null;
+        }
+        
+        return json_decode($json, true);
+    }
+
     public function getInvestorWithUser($investorId)
     {
         $sql = "
@@ -60,10 +72,10 @@ class Investor extends BaseModel
         $investor = $this->db->fetch($sql, [$investorId]);
         
         if ($investor) {
-            // Decode JSON fields
-            $investor['preferred_industries'] = json_decode($investor['preferred_industries'], true) ?? [];
-            $investor['investment_stages'] = json_decode($investor['investment_stages'], true) ?? [];
-            $investor['portfolio_companies'] = json_decode($investor['portfolio_companies'], true) ?? [];
+            // FIX: Decode JSON fields safely
+            $investor['preferred_industries'] = $this->safeJsonDecode($investor['preferred_industries']) ?? [];
+            $investor['investment_stages'] = $this->safeJsonDecode($investor['investment_stages']) ?? [];
+            $investor['portfolio_companies'] = $this->safeJsonDecode($investor['portfolio_companies']) ?? [];
         }
         
         return $investor;
@@ -105,29 +117,29 @@ class Investor extends BaseModel
         $sql = "
             SELECT i.*, u.first_name, u.last_name
             FROM investors i
-            JOIN users u ON i.user_id = u.id
+            JOIN users u ON i.user_id = u.id AND u.is_active = 1
             WHERE 1=1
         ";
-        
+
         // Text search
         if (!empty($query)) {
-            $sql .= " AND (i.company_name LIKE ? OR i.bio LIKE ? OR u.first_name LIKE ? OR u.last_name LIKE ?)";
+            $sql .= " AND (
+                i.company_name LIKE ? 
+                OR i.bio LIKE ? 
+                OR u.first_name LIKE ? 
+                OR u.last_name LIKE ?
+            )";
             $searchTerm = '%' . $query . '%';
             $params[] = $searchTerm;
             $params[] = $searchTerm;
             $params[] = $searchTerm;
             $params[] = $searchTerm;
         }
-        
-        // Apply filters
+
+        // Apply filters 
         if (!empty($filters['investor_type'])) {
             $sql .= " AND i.investor_type = ?";
             $params[] = $filters['investor_type'];
-        }
-        
-        if (!empty($filters['availability_status'])) {
-            $sql .= " AND i.availability_status = ?";
-            $params[] = $filters['availability_status'];
         }
         
         if (!empty($filters['location'])) {
@@ -136,33 +148,54 @@ class Investor extends BaseModel
         }
         
         if (!empty($filters['investment_min'])) {
-            $sql .= " AND i.investment_range_min >= ?";
-            $params[] = $filters['investment_min'];
+            $sql .= " AND i.investment_range_max >= ?";
+            $params[] = (float)$filters['investment_min'];
         }
         
         if (!empty($filters['investment_max'])) {
-            $sql .= " AND i.investment_range_max <= ?";
-            $params[] = $filters['investment_max'];
+            $sql .= " AND i.investment_range_min <= ?";
+            $params[] = (float)$filters['investment_max'];
         }
         
-        // Get total count
-        $countSql = str_replace('SELECT i.*, u.first_name, u.last_name', 'SELECT COUNT(*) as total', $sql);
+        if (!empty($filters['industry'])) {
+            $sql .= " AND JSON_CONTAINS(i.preferred_industries, ?)";
+            $params[] = json_encode([(int)$filters['industry']]);
+        }
+
+        $sql .= " AND i.availability_status = 'actively_investing'";
+
+        // Get total count for pagination
+        $countSql = str_replace(
+            'SELECT i.*, u.first_name, u.last_name', 
+            'SELECT COUNT(*) as total', 
+            $sql
+        );
         $totalResult = $this->db->fetch($countSql, $params);
         $total = $totalResult['total'];
-        
+
         // Add ordering and pagination
         $sql .= " ORDER BY i.created_at DESC LIMIT ? OFFSET ?";
         $params[] = $perPage;
         $params[] = $offset;
-        
+
         $results = $this->db->fetchAll($sql, $params);
-        
+
+        // FIX: Decode JSON fields safely for display
+        foreach ($results as &$result) {
+            $result['preferred_industries'] = $this->safeJsonDecode($result['preferred_industries']) ?? [];
+            $result['investment_stages'] = $this->safeJsonDecode($result['investment_stages']) ?? [];
+        }
+
         return [
             'data' => $results,
-            'total' => $total,
-            'per_page' => $perPage,
-            'current_page' => $page,
-            'last_page' => ceil($total / $perPage)
+            'pagination' => [
+                'total' => $total,
+                'per_page' => $perPage,
+                'current_page' => $page,
+                'last_page' => ceil($total / $perPage),
+                'from' => $offset + 1,
+                'to' => min($offset + $perPage, $total)
+            ]
         ];
     }
 

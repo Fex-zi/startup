@@ -29,6 +29,18 @@ class MatchModel extends BaseModel
         
         return $this->update($id, $data);
     }
+    
+    /**
+     * Safely decode JSON, handling null values
+     */
+    private function safeJsonDecode($json)
+    {
+        if ($json === null || $json === '') {
+            return null;
+        }
+        
+        return json_decode($json, true);
+    }
 
     public function getMatchWithDetails($matchId)
     {
@@ -52,7 +64,8 @@ class MatchModel extends BaseModel
         $match = $this->db->fetch($sql, [$matchId]);
         
         if ($match && $match['match_reasons']) {
-            $match['match_reasons'] = json_decode($match['match_reasons'], true) ?? [];
+            // FIX: Safely decode JSON
+            $match['match_reasons'] = $this->safeJsonDecode($match['match_reasons']) ?? [];
         }
         
         return $match;
@@ -83,10 +96,10 @@ class MatchModel extends BaseModel
         
         $matches = $this->db->fetchAll($sql, $params);
         
-        // Decode match_reasons for each match
+        // FIX: Decode match_reasons safely for each match
         foreach ($matches as &$match) {
             if ($match['match_reasons']) {
-                $match['match_reasons'] = json_decode($match['match_reasons'], true) ?? [];
+                $match['match_reasons'] = $this->safeJsonDecode($match['match_reasons']) ?? [];
             }
         }
         
@@ -119,10 +132,10 @@ class MatchModel extends BaseModel
         
         $matches = $this->db->fetchAll($sql, $params);
         
-        // Decode match_reasons for each match
+        // FIX: Decode match_reasons safely for each match
         foreach ($matches as &$match) {
             if ($match['match_reasons']) {
-                $match['match_reasons'] = json_decode($match['match_reasons'], true) ?? [];
+                $match['match_reasons'] = $this->safeJsonDecode($match['match_reasons']) ?? [];
             }
         }
         

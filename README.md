@@ -167,6 +167,6 @@ The platform includes basic error handling and validation. For production deploy
 - Performance load testing
 - Cross-browser compatibility testing
 
-## Support
+## Support - use showToast
 
 This MVP demonstrates a production-ready architecture that can scale with your business needs. The modular design allows for easy feature additions and modifications.

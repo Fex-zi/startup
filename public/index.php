@@ -47,14 +47,21 @@ $router->get('/search/quick', 'SearchController@quickSearch');
 
 // Matching routes
 $router->get('/matches', 'MatchingController@index');
-$router->get('/matches/mutual', 'MatchingController@mutualMatches');
+$router->get('/matches/mutual', 'MatchingController@mutualMatches');  
 $router->get('/matches/view/{id}', 'MatchingController@viewMatch');
+$router->get('/matches/recommendations', 'MatchingController@recommendations');
 
 // Matching API routes
 $router->post('/api/match/find', 'MatchingController@findMatches');
 $router->post('/api/match/interest', 'MatchingController@expressInterest');
-$router->get('/api/match/recommendations', 'MatchingController@getMatchRecommendations');
-$router->post('/api/match/delete/{id}', 'MatchingController@deleteMatch');
+$router->post('/api/match/bulk', 'MatchingController@bulkAction');
+$router->get('/api/match/count', 'MatchingController@getMatchCount');
+$router->get('/api/match/preview/{id}', 'MatchingController@getMatchPreview');
+$router->post('/api/match/complete', 'MatchingController@completeMatch');
+
+// Notification API routes (for real-time updates)
+$router->get('/api/notifications/counts', 'NotificationController@getCounts');
+$router->get('/api/messages/unread-count', 'MessageController@getUnreadCount');
 
 // Message routes (placeholder for future implementation)
 $router->get('/messages', 'MessageController@index');

@@ -1,5 +1,4 @@
 <?php
-
 namespace Services;
 
 use Models\Startup;
@@ -70,8 +69,9 @@ class MatchingService
         $investor = $this->investor->find($investorId);
         if (!$investor) return [];
 
-        $preferredIndustries = json_decode($investor['preferred_industries'], true) ?? [];
-        $investmentStages = json_decode($investor['investment_stages'], true) ?? [];
+        // FIX: Handle null JSON values properly
+        $preferredIndustries = $this->safeJsonDecode($investor['preferred_industries']) ?? [];
+        $investmentStages = $this->safeJsonDecode($investor['investment_stages']) ?? [];
 
         if (empty($preferredIndustries) || empty($investmentStages)) {
             return [];
@@ -126,13 +126,15 @@ class MatchingService
         $score = 0;
 
         // Industry match (30 points)
-        $investorIndustries = json_decode($investor['preferred_industries'], true) ?? [];
+        // FIX: Handle null JSON values properly
+        $investorIndustries = $this->safeJsonDecode($investor['preferred_industries']) ?? [];
         if (in_array($startup['industry_id'], $investorIndustries)) {
             $score += 30;
         }
 
         // Stage match (25 points)
-        $investorStages = json_decode($investor['investment_stages'], true) ?? [];
+        // FIX: Handle null JSON values properly
+        $investorStages = $this->safeJsonDecode($investor['investment_stages']) ?? [];
         if (in_array($startup['stage'], $investorStages)) {
             $score += 25;
         }
@@ -149,7 +151,8 @@ class MatchingService
         }
 
         // Track record relevance (10 points)
-        $portfolioCompanies = json_decode($investor['portfolio_companies'], true) ?? [];
+        // FIX: Handle null JSON values properly
+        $portfolioCompanies = $this->safeJsonDecode($investor['portfolio_companies']) ?? [];
         foreach ($portfolioCompanies as $company) {
             if (isset($company['industry_id']) && $company['industry_id'] == $startup['industry_id']) {
                 $score += 10;
@@ -164,12 +167,13 @@ class MatchingService
     {
         $reasons = [];
 
-        $investorIndustries = json_decode($investor['preferred_industries'], true) ?? [];
+        // FIX: Handle null JSON values properly
+        $investorIndustries = $this->safeJsonDecode($investor['preferred_industries']) ?? [];
         if (in_array($startup['industry_id'], $investorIndustries)) {
             $reasons[] = 'Industry expertise match';
         }
 
-        $investorStages = json_decode($investor['investment_stages'], true) ?? [];
+        $investorStages = $this->safeJsonDecode($investor['investment_stages']) ?? [];
         if (in_array($startup['stage'], $investorStages)) {
             $reasons[] = 'Investment stage alignment';
         }
@@ -257,5 +261,18 @@ class MatchingService
         }
 
         return $createdMatches;
+    }
+
+    /**
+     * Safely decode JSON, handling null values
+     * FIX: This prevents the deprecation warning
+     */
+    private function safeJsonDecode($json)
+    {
+        if ($json === null || $json === '') {
+            return null;
+        }
+        
+        return json_decode($json, true);
     }
 }

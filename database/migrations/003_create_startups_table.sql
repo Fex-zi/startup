@@ -1,0 +1,28 @@
+CREATE TABLE IF NOT EXISTS startups (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
+    company_name VARCHAR(255) NOT NULL,
+    slug VARCHAR(255) UNIQUE NOT NULL,
+    description TEXT,
+    industry_id INT UNSIGNED,
+    stage ENUM('idea', 'prototype', 'mvp', 'early_revenue', 'growth') NOT NULL,
+    employee_count ENUM('1', '2-5', '6-10', '11-25', '26-50', '51+'),
+    website VARCHAR(255),
+    logo_url VARCHAR(255),
+    pitch_deck_url VARCHAR(255),
+    funding_goal DECIMAL(15,2),
+    funding_type ENUM('seed', 'series_a', 'series_b', 'debt', 'grant'),
+    location VARCHAR(255),
+    is_featured BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (industry_id) REFERENCES industries(id) ON DELETE SET NULL,
+    INDEX idx_industry (industry_id),
+    INDEX idx_stage (stage),
+    INDEX idx_location (location),
+    INDEX idx_funding_goal (funding_goal),
+    INDEX idx_slug (slug),
+    FULLTEXT idx_search (company_name, description)
+);

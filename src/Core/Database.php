@@ -1,0 +1,167 @@
+<?php
+
+namespace Core;
+
+use PDO;
+use PDOException;
+use Exception;
+
+class Database
+{
+    private static $instance = null;
+    private $connection;
+    private $host;
+    private $username;
+    private $password;
+    private $database;
+    private $options;
+
+    private function __construct()
+    {
+        $config = require_once __DIR__ . '/../../config/database.php';
+        
+        $this->host = $config['host'];
+        $this->username = $config['username'];
+        $this->password = $config['password'];
+        $this->database = $config['database'];
+        $this->options = $config['options'];
+        
+        $this->connect();
+    }
+
+    public static function getInstance()
+    {
+        if (self::$instance === null) {
+            self::$instance = new Database();
+        }
+        return self::$instance;
+    }
+
+    private function connect()
+    {
+        try {
+            $dsn = "mysql:host={$this->host};dbname={$this->database};charset=utf8mb4";
+            $this->connection = new PDO($dsn, $this->username, $this->password, $this->options);
+        } catch (PDOException $e) {
+            throw new Exception("Database connection failed: " . $e->getMessage());
+        }
+    }
+
+    public function getConnection()
+    {
+        return $this->connection;
+    }
+
+    public function query($sql, $params = [])
+    {
+        try {
+            $stmt = $this->connection->prepare($sql);
+            $stmt->execute($params);
+            return $stmt;
+        } catch (PDOException $e) {
+            throw new Exception("Query failed: " . $e->getMessage() . " SQL: " . $sql);
+        }
+    }
+
+    public function fetch($sql, $params = [])
+    {
+        return $this->query($sql, $params)->fetch();
+    }
+
+    public function fetchAll($sql, $params = [])
+    {
+        return $this->query($sql, $params)->fetchAll();
+    }
+
+    public function insert($sql, $params = [])
+    {
+        $this->query($sql, $params);
+        return $this->connection->lastInsertId();
+    }
+
+    public function update($sql, $params = [])
+    {
+        return $this->query($sql, $params)->rowCount();
+    }
+
+    public function delete($sql, $params = [])
+    {
+        return $this->query($sql, $params)->rowCount();
+    }
+
+    public function beginTransaction()
+    {
+        return $this->connection->beginTransaction();
+    }
+
+    public function commit()
+    {
+        return $this->connection->commit();
+    }
+
+    public function rollback()
+    {
+        return $this->connection->rollback();
+    }
+
+    public function lastInsertId()
+    {
+        return $this->connection->lastInsertId();
+    }
+
+    public function tableExists($tableName)
+    {
+        $sql = "SHOW TABLES LIKE ?";
+        $result = $this->fetch($sql, [$tableName]);
+        return !empty($result);
+    }
+
+    public function createDatabase($databaseName)
+    {
+        try {
+            // Connect without specifying database first
+            $dsn = "mysql:host={$this->host};charset=utf8mb4";
+            $tempConnection = new PDO($dsn, $this->username, $this->password, $this->options);
+            
+            $sql = "CREATE DATABASE IF NOT EXISTS `{$databaseName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci";
+            $tempConnection->exec($sql);
+            
+            // Now reconnect to the specific database
+            $this->connect();
+            
+            return true;
+        } catch (PDOException $e) {
+            throw new Exception("Failed to create database: " . $e->getMessage());
+        }
+    }
+
+    public function runMigration($migrationFile)
+    {
+        if (!file_exists($migrationFile)) {
+            throw new Exception("Migration file not found: {$migrationFile}");
+        }
+
+        $sql = file_get_contents($migrationFile);
+        
+        // Split multiple statements
+        $statements = array_filter(array_map('trim', explode(';', $sql)));
+        
+        $currentStatement = '';
+        try {
+            foreach ($statements as $statement) {
+                if (!empty($statement)) {
+                    $currentStatement = $statement;
+                    // Execute each statement directly (DDL statements don't support transactions)
+                    $this->connection->exec($statement);
+                }
+            }
+            return true;
+        } catch (PDOException $e) {
+            throw new Exception("Migration failed: " . $e->getMessage() . " SQL: " . $currentStatement);
+        }
+    }
+
+    // Prevent cloning and unserialization
+    private function __clone() {}
+    public function __wakeup() {}
+}

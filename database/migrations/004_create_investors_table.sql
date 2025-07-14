@@ -1,0 +1,25 @@
+CREATE TABLE IF NOT EXISTS investors (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
+    investor_type ENUM('angel', 'vc_firm', 'corporate', 'family_office') NOT NULL,
+    company_name VARCHAR(255),
+    bio TEXT,
+    preferred_industries JSON,
+    investment_stages JSON,
+    investment_range_min DECIMAL(15,2),
+    investment_range_max DECIMAL(15,2),
+    location VARCHAR(255),
+    portfolio_companies JSON,
+    availability_status ENUM('actively_investing', 'selective', 'not_investing') DEFAULT 'actively_investing',
+    linkedin_url VARCHAR(255),
+    website VARCHAR(255),
+    avatar_url VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_investor_type (investor_type),
+    INDEX idx_location (location),
+    INDEX idx_investment_range (investment_range_min, investment_range_max),
+    INDEX idx_availability (availability_status)
+);

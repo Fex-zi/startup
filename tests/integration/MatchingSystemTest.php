@@ -1,6 +1,5 @@
 <?php
 // Basic integration test for the matching system
-
 require_once __DIR__ . '/../../src/Core/Application.php';
 
 use Core\Application;

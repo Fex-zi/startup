@@ -42,10 +42,34 @@ $router->get('/profile/view/{id}', 'ProfileController@view');
 $router->get('/search/startups', 'SearchController@startups');
 $router->get('/search/investors', 'SearchController@investors');
 $router->post('/search/filter', 'SearchController@filter');
+$router->get('/search/suggestions', 'SearchController@suggestions');
+$router->get('/search/quick', 'SearchController@quickSearch');
 
 // Matching routes
 $router->get('/matches', 'MatchingController@index');
-$router->post('/api/match', 'MatchingController@findMatches');
+$router->get('/matches/mutual', 'MatchingController@mutualMatches');
+$router->get('/matches/view/{id}', 'MatchingController@viewMatch');
+
+// Matching API routes
+$router->post('/api/match/find', 'MatchingController@findMatches');
+$router->post('/api/match/interest', 'MatchingController@expressInterest');
+$router->get('/api/match/recommendations', 'MatchingController@getMatchRecommendations');
+$router->post('/api/match/delete/{id}', 'MatchingController@deleteMatch');
+
+// Message routes (placeholder for future implementation)
+$router->get('/messages', 'MessageController@index');
+$router->get('/messages/conversation/{id}', 'MessageController@conversation');
+$router->post('/messages/send', 'MessageController@send');
+
+// File upload routes (placeholder for future implementation)
+$router->post('/upload/logo', 'FileController@uploadLogo');
+$router->post('/upload/document', 'FileController@uploadDocument');
+
+// Admin routes (placeholder for future implementation)
+$router->get('/admin', 'AdminController@index');
+$router->get('/admin/users', 'AdminController@users');
+$router->get('/admin/startups', 'AdminController@startups');
+$router->get('/admin/investors', 'AdminController@investors');
 
 // Handle the request
 $router->dispatch($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']);

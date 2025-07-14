@@ -37,12 +37,14 @@
                             <label for="industry" class="form-label">Industry Focus</label>
                             <select class="form-select" id="industry" name="industry">
                                 <option value="">All Industries</option>
-                                <?php foreach ($industries as $industry): ?>
-                                    <option value="<?= $industry['id'] ?>" 
-                                            <?= ($filters['industry'] ?? '') == $industry['id'] ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars($industry['name']) ?>
-                                    </option>
-                                <?php endforeach; ?>
+                                <?php if (!empty($industries) && is_array($industries)): ?>
+                                    <?php foreach ($industries as $industry): ?>
+                                        <option value="<?= htmlspecialchars($industry['id'] ?? '') ?>" 
+                                                <?= ($filters['industry'] ?? '') == ($industry['id'] ?? '') ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($industry['name'] ?? '') ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                             </select>
                         </div>
                         
@@ -103,6 +105,18 @@
     </div>
 </div>
 
+<!-- Error Display -->
+<?php if (!empty($error)): ?>
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <?= htmlspecialchars($error) ?>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
+
 <!-- Results -->
 <div class="row">
     <div class="col-12">
@@ -111,7 +125,7 @@
                 <h5 class="mb-0">
                     <i class="fas fa-dollar-sign me-2"></i>
                     Investors 
-                    <span class="badge bg-primary"><?= $pagination['total'] ?? 0 ?></span>
+                    <span class="badge bg-primary"><?= ($pagination['total'] ?? 0) ?></span>
                 </h5>
                 <div class="d-flex gap-2">
                     <select class="form-select form-select-sm" style="width: auto;">
@@ -122,7 +136,7 @@
                 </div>
             </div>
             <div class="card-body">
-                <?php if (!empty($investors)): ?>
+                <?php if (!empty($investors) && is_array($investors)): ?>
                     <div class="row">
                         <?php foreach ($investors as $investor): ?>
                             <div class="col-lg-6 mb-4">
@@ -132,20 +146,24 @@
                                             <div class="flex-shrink-0 me-3">
                                                 <?php if (!empty($investor['avatar_url'])): ?>
                                                     <img src="<?= htmlspecialchars($investor['avatar_url']) ?>" 
-                                                         alt="<?= htmlspecialchars($investor['first_name'] . ' ' . $investor['last_name']) ?>"
+                                                         alt="<?= htmlspecialchars(($investor['first_name'] ?? '') . ' ' . ($investor['last_name'] ?? '')) ?>"
                                                          class="rounded-circle" 
                                                          style="width: 60px; height: 60px; object-fit: cover;">
                                                 <?php else: ?>
                                                     <div class="bg-success rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" 
                                                          style="width: 60px; height: 60px; font-size: 1.2rem;">
-                                                        <?= strtoupper(substr($investor['first_name'], 0, 1) . substr($investor['last_name'], 0, 1)) ?>
+                                                        <?php 
+                                                        $firstName = $investor['first_name'] ?? '';
+                                                        $lastName = $investor['last_name'] ?? '';
+                                                        echo strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
+                                                        ?>
                                                     </div>
                                                 <?php endif; ?>
                                             </div>
                                             <div class="flex-grow-1">
                                                 <h5 class="mb-1">
-                                                    <?= htmlspecialchars($investor['first_name'] . ' ' . $investor['last_name']) ?>
-                                                    <?php if ($investor['availability_status'] === 'actively_investing'): ?>
+                                                    <?= htmlspecialchars(($investor['first_name'] ?? '') . ' ' . ($investor['last_name'] ?? '')) ?>
+                                                    <?php if (($investor['availability_status'] ?? '') === 'actively_investing'): ?>
                                                         <span class="badge bg-success ms-2">
                                                             <i class="fas fa-check-circle me-1"></i>Active
                                                         </span>
@@ -159,9 +177,11 @@
                                                 <?php endif; ?>
                                                 <p class="text-muted mb-0">
                                                     <small>
-                                                        <span class="badge bg-info me-2">
-                                                            <?= ucfirst(str_replace('_', ' ', $investor['investor_type'])) ?>
-                                                        </span>
+                                                        <?php if (!empty($investor['investor_type'])): ?>
+                                                            <span class="badge bg-info me-2">
+                                                                <?= ucfirst(str_replace('_', ' ', $investor['investor_type'])) ?>
+                                                            </span>
+                                                        <?php endif; ?>
                                                         <?php if (!empty($investor['location'])): ?>
                                                             <i class="fas fa-map-marker-alt me-1"></i>
                                                             <?= htmlspecialchars($investor['location']) ?>
@@ -172,8 +192,11 @@
                                         </div>
                                         
                                         <p class="mb-3">
-                                            <?= htmlspecialchars(substr($investor['bio'] ?? '', 0, 120)) ?>
-                                            <?php if (strlen($investor['bio'] ?? '') > 120): ?>...<?php endif; ?>
+                                            <?php 
+                                            $bio = $investor['bio'] ?? '';
+                                            echo htmlspecialchars(substr($bio, 0, 120));
+                                            if (strlen($bio) > 120) echo '...';
+                                            ?>
                                         </p>
                                         
                                         <div class="row text-center mb-3">
@@ -181,8 +204,8 @@
                                                 <small class="text-muted d-block">Investment Range</small>
                                                 <strong>
                                                     <?php 
-                                                    $min = $investor['investment_range_min'];
-                                                    $max = $investor['investment_range_max'];
+                                                    $min = $investor['investment_range_min'] ?? 0;
+                                                    $max = $investor['investment_range_max'] ?? 0;
                                                     echo '$' . number_format($min) . ' - $' . number_format($max);
                                                     ?>
                                                 </strong>
@@ -190,8 +213,8 @@
                                             <div class="col-6">
                                                 <small class="text-muted d-block">Focus Areas</small>
                                                 <?php 
-                                                $preferredIndustries = json_decode($investor['preferred_industries'], true) ?? [];
-                                                if (!empty($preferredIndustries)): 
+                                                $preferredIndustries = $investor['preferred_industries'] ?? [];
+                                                if (!empty($preferredIndustries) && is_array($preferredIndustries)): 
                                                 ?>
                                                     <span class="badge bg-secondary">
                                                         <?= count($preferredIndustries) ?> Industries
@@ -204,12 +227,15 @@
                                         
                                         <!-- Investment Stages -->
                                         <?php 
-                                        $investmentStages = json_decode($investor['investment_stages'], true) ?? [];
-                                        if (!empty($investmentStages)): 
+                                        $investmentStages = $investor['investment_stages'] ?? [];
+                                        if (!empty($investmentStages) && is_array($investmentStages)): 
                                         ?>
                                             <div class="mb-3">
                                                 <small class="text-muted d-block mb-1">Investment Stages:</small>
-                                                <?php foreach (array_slice($investmentStages, 0, 3) as $stage): ?>
+                                                <?php 
+                                                $displayStages = array_slice($investmentStages, 0, 3);
+                                                foreach ($displayStages as $stage): 
+                                                ?>
                                                     <span class="badge bg-light text-dark me-1">
                                                         <?= ucfirst(str_replace('_', ' ', $stage)) ?>
                                                     </span>
@@ -223,7 +249,7 @@
                                         <div class="d-flex justify-content-between align-items-center">
                                             <small class="text-muted">
                                                 <i class="fas fa-clock me-1"></i>
-                                                Joined <?= date('M Y', strtotime($investor['created_at'])) ?>
+                                                Joined <?= date('M Y', strtotime($investor['created_at'] ?? 'now')) ?>
                                             </small>
                                             <div class="d-flex gap-2">
                                                 <?php if (!empty($investor['linkedin_url'])): ?>
@@ -233,13 +259,13 @@
                                                         <i class="fab fa-linkedin me-1"></i>LinkedIn
                                                     </a>
                                                 <?php endif; ?>
-                                                <a href="<?= url('profile/view/' . $investor['user_id']) ?>" 
+                                                <a href="<?= url('profile/view/' . ($investor['user_id'] ?? '')) ?>" 
                                                    class="btn btn-sm btn-outline-primary">
                                                     <i class="fas fa-eye me-1"></i>View
                                                 </a>
-                                                <?php if ($currentUser['user_type'] === 'startup'): ?>
+                                                <?php if (($currentUser['user_type'] ?? '') === 'startup'): ?>
                                                     <button class="btn btn-sm btn-success" 
-                                                            onclick="expressInterest(<?= $investor['id'] ?>, 'investor')">
+                                                            onclick="expressInterest(<?= $investor['id'] ?? 0 ?>, 'investor')">
                                                         <i class="fas fa-handshake me-1"></i>Connect
                                                     </button>
                                                 <?php endif; ?>
@@ -252,24 +278,28 @@
                     </div>
                     
                     <!-- Pagination -->
-                    <?php if ($pagination['last_page'] > 1): ?>
+                    <?php if (($pagination['last_page'] ?? 1) > 1): ?>
                         <nav aria-label="Search results pagination">
                             <ul class="pagination justify-content-center">
-                                <?php if ($pagination['current_page'] > 1): ?>
+                                <?php if (($pagination['current_page'] ?? 1) > 1): ?>
                                     <li class="page-item">
-                                        <a class="page-link" href="?<?= http_build_query(array_merge($filters, ['page' => $pagination['current_page'] - 1])) ?>">Previous</a>
+                                        <a class="page-link" href="?<?= http_build_query(array_merge($filters, ['page' => ($pagination['current_page'] ?? 1) - 1])) ?>">Previous</a>
                                     </li>
                                 <?php endif; ?>
                                 
-                                <?php for ($i = max(1, $pagination['current_page'] - 2); $i <= min($pagination['last_page'], $pagination['current_page'] + 2); $i++): ?>
-                                    <li class="page-item <?= $i === $pagination['current_page'] ? 'active' : '' ?>">
+                                <?php 
+                                $currentPage = $pagination['current_page'] ?? 1;
+                                $lastPage = $pagination['last_page'] ?? 1;
+                                for ($i = max(1, $currentPage - 2); $i <= min($lastPage, $currentPage + 2); $i++): 
+                                ?>
+                                    <li class="page-item <?= $i === $currentPage ? 'active' : '' ?>">
                                         <a class="page-link" href="?<?= http_build_query(array_merge($filters, ['page' => $i])) ?>"><?= $i ?></a>
                                     </li>
                                 <?php endfor; ?>
                                 
-                                <?php if ($pagination['current_page'] < $pagination['last_page']): ?>
+                                <?php if ($currentPage < $lastPage): ?>
                                     <li class="page-item">
-                                        <a class="page-link" href="?<?= http_build_query(array_merge($filters, ['page' => $pagination['current_page'] + 1])) ?>">Next</a>
+                                        <a class="page-link" href="?<?= http_build_query(array_merge($filters, ['page' => $currentPage + 1])) ?>">Next</a>
                                     </li>
                                 <?php endif; ?>
                             </ul>
@@ -303,6 +333,11 @@
 
 <script>
 function expressInterest(investorId, type) {
+    if (!investorId) {
+        alert('Invalid investor ID');
+        return;
+    }
+    
     // This would be implemented with AJAX to the matching API
     fetch('<?= url('api/match/interest') ?>', {
         method: 'POST',
@@ -316,7 +351,7 @@ function expressInterest(investorId, type) {
         if (data.success) {
             alert('Connection request sent! We\'ll notify you if there\'s mutual interest.');
         } else {
-            alert('Error: ' + data.message);
+            alert('Error: ' + (data.message || 'Unknown error occurred'));
         }
     })
     .catch(error => {

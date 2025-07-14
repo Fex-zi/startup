@@ -111,9 +111,38 @@ class Database
 
     public function tableExists($tableName)
     {
-        $sql = "SHOW TABLES LIKE ?";
-        $result = $this->fetch($sql, [$tableName]);
-        return !empty($result);
+        try {
+            // Method 1: Use SHOW TABLES with prepared statement
+            $sql = "SHOW TABLES LIKE ?";
+            $stmt = $this->connection->prepare($sql);
+            $stmt->execute([$tableName]);
+            $result = $stmt->fetch();
+            
+            if ($result !== false) {
+                return true;
+            }
+            
+            // Method 2: Fallback - Query information_schema
+            $sql = "SELECT COUNT(*) as count FROM information_schema.tables 
+                    WHERE table_schema = DATABASE() AND table_name = ?";
+            $stmt = $this->connection->prepare($sql);
+            $stmt->execute([$tableName]);
+            $result = $stmt->fetch();
+            
+            return $result && $result['count'] > 0;
+            
+        } catch (PDOException $e) {
+            error_log("Table exists check failed: " . $e->getMessage());
+            
+            // Method 3: Ultimate fallback - try to describe table
+            try {
+                $sql = "DESCRIBE `{$tableName}`";
+                $this->connection->query($sql);
+                return true;
+            } catch (PDOException $e2) {
+                return false;
+            }
+        }
     }
 
     public function createDatabase($databaseName)
@@ -158,6 +187,44 @@ class Database
             return true;
         } catch (PDOException $e) {
             throw new Exception("Migration failed: " . $e->getMessage() . " SQL: " . $currentStatement);
+        }
+    }
+
+    /**
+     * Safe table count method
+     */
+    public function getTableCount($tableName)
+    {
+        try {
+            if (!$this->tableExists($tableName)) {
+                return 0;
+            }
+            
+            $sql = "SELECT COUNT(*) as count FROM `{$tableName}`";
+            $result = $this->fetch($sql);
+            return $result['count'] ?? 0;
+        } catch (Exception $e) {
+            error_log("Table count failed for {$tableName}: " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    /**
+     * Get all table names
+     */
+    public function getAllTables()
+    {
+        try {
+            $sql = "SHOW TABLES";
+            $result = $this->connection->query($sql);
+            $tables = [];
+            while ($row = $result->fetch(PDO::FETCH_NUM)) {
+                $tables[] = $row[0];
+            }
+            return $tables;
+        } catch (PDOException $e) {
+            error_log("Get all tables failed: " . $e->getMessage());
+            return [];
         }
     }
 

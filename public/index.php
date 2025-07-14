@@ -18,6 +18,16 @@ $app = new Application();
 // Set up routing
 $router = new Router();
 
+// Root redirect
+$router->get('/', function() {
+    if (isset($_SESSION['user_id'])) {
+        header('Location: ' . url('dashboard'));
+    } else {
+        header('Location: ' . url('login'));
+    }
+    exit;
+});
+
 // Authentication routes
 $router->get('/login', 'AuthController@showLogin');
 $router->post('/login', 'AuthController@login');
@@ -28,7 +38,6 @@ $router->post('/choose-type', 'AuthController@setUserType');
 $router->get('/logout', 'AuthController@logout');
 
 // Dashboard routes
-$router->get('/', 'DashboardController@index');
 $router->get('/dashboard', 'DashboardController@index');
 
 // Profile routes
@@ -47,21 +56,14 @@ $router->get('/search/quick', 'SearchController@quickSearch');
 
 // Matching routes
 $router->get('/matches', 'MatchingController@index');
-$router->get('/matches/mutual', 'MatchingController@mutualMatches');  
+$router->get('/matches/mutual', 'MatchingController@mutualMatches');
 $router->get('/matches/view/{id}', 'MatchingController@viewMatch');
-$router->get('/matches/recommendations', 'MatchingController@recommendations');
 
 // Matching API routes
 $router->post('/api/match/find', 'MatchingController@findMatches');
 $router->post('/api/match/interest', 'MatchingController@expressInterest');
-$router->post('/api/match/bulk', 'MatchingController@bulkAction');
-$router->get('/api/match/count', 'MatchingController@getMatchCount');
-$router->get('/api/match/preview/{id}', 'MatchingController@getMatchPreview');
-$router->post('/api/match/complete', 'MatchingController@completeMatch');
-
-// Notification API routes (for real-time updates)
-$router->get('/api/notifications/counts', 'NotificationController@getCounts');
-$router->get('/api/messages/unread-count', 'MessageController@getUnreadCount');
+$router->get('/api/match/recommendations', 'MatchingController@getMatchRecommendations');
+$router->post('/api/match/delete/{id}', 'MatchingController@deleteMatch');
 
 // Message routes (placeholder for future implementation)
 $router->get('/messages', 'MessageController@index');
@@ -79,4 +81,13 @@ $router->get('/admin/startups', 'AdminController@startups');
 $router->get('/admin/investors', 'AdminController@investors');
 
 // Handle the request
-$router->dispatch($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']);
+try {
+    $router->dispatch($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']);
+} catch (Exception $e) {
+    // Log error and show 404
+    error_log("Router error: " . $e->getMessage());
+    http_response_code(404);
+    echo "<h1>404 - Page Not Found</h1>";
+    echo "<p>The requested page could not be found.</p>";
+    echo "<p><a href='" . url('dashboard') . "'>Return to Dashboard</a></p>";
+}

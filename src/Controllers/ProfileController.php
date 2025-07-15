@@ -45,7 +45,7 @@ class ProfileController
 
         // If profile already completed, redirect to dashboard
         if ($user['profile_completed']) {
-            header('Location: dashboard');
+            header('Location: ' . url('dashboard'));
             exit;
         }
 
@@ -142,7 +142,7 @@ class ProfileController
                 $this->user->markProfileCompleted($userId);
 
                 // Redirect to dashboard
-                header('Location: dashboard');
+                header('Location: ' . url('dashboard'));
                 exit;
             } else {
                 throw new \Exception('Failed to create startup profile');
@@ -211,7 +211,7 @@ class ProfileController
                 $this->user->markProfileCompleted($userId);
 
                 // Redirect to dashboard
-                header('Location: dashboard');
+                header('Location: ' . url('dashboard'));
                 exit;
             } else {
                 throw new \Exception('Failed to create investor profile');
@@ -277,7 +277,7 @@ class ProfileController
     {
         // Similar to store but for updating existing profiles
         // Implementation would be similar to store methods
-        header('Location: dashboard');
+        header('Location: ' . url('dashboard'));
         exit;
     }
 
@@ -286,7 +286,7 @@ class ProfileController
         // View public profile
         $user = $this->user->find($id);
         if (!$user) {
-            header('Location: dashboard');
+            header('Location: ' . url('dashboard'));
             exit;
         }
 

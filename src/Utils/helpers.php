@@ -24,7 +24,7 @@ if (!function_exists('asset')) {
      * @return string
      */
     function asset($path) {
-        return url('assets/' . ltrim($path, '/'));
+        return url('/public/assets/' . ltrim($path, '/'));
     }
 }
 

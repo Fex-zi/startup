@@ -1,138 +1,145 @@
+<?php
+// Get current route for active navigation
+$currentUri = $_SERVER['REQUEST_URI'];
+$currentPath = parse_url($currentUri, PHP_URL_PATH);
+$basePath = dirname($_SERVER['SCRIPT_NAME']);
+if ($basePath !== '/' && strpos($currentPath, $basePath) === 0) {
+    $currentPath = substr($currentPath, strlen($basePath));
+}
+$currentPath = trim($currentPath, '/');
+
+function isActiveRoute($route, $currentPath) {
+    if ($route === 'dashboard' && ($currentPath === '' || $currentPath === 'dashboard')) {
+        return true;
+    }
+    return strpos($currentPath, $route) === 0;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $title ?? 'Dashboard - Startup Connect' ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
-        .sidebar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            color: white;
-        }
-        .sidebar .nav-link {
-            color: rgba(255, 255, 255, 0.8);
-            border-radius: 8px;
-            margin: 2px 0;
-        }
-        .sidebar .nav-link:hover,
-        .sidebar .nav-link.active {
-            color: white;
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-        .main-content {
-            padding: 2rem;
-        }
-        .card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-        }
-        .card-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 15px 15px 0 0 !important;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-        }
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
-        }
-        .stats-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        .navbar-brand {
-            font-weight: bold;
-        }
-    </style>
+    
+    <!-- External CSS Files - Following New Rule -->
+    <link href="<?= asset('vendor/bootstrap/bootstrap.min.css') ?>" rel="stylesheet">
+    <link href="<?= asset('vendor/fontawesome/all.min.css') ?>" rel="stylesheet">
+    <link href="<?= asset('css/layout.css') ?>" rel="stylesheet">
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="row">
+    <!-- Mobile Toggle Button -->
+    <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="sidebar">
+        <i class="fas fa-bars" aria-hidden="true"></i>
+    </button>
+
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
+
+    <div class="container-fluid p-0">
+        <div class="row g-0">
             <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 sidebar p-3">
-                <div class="text-center mb-4">
-                    <h4><i class="fas fa-rocket me-2"></i>Startup Connect</h4>
+            <nav class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+                <div class="sidebar-header text-center">
+                    <h4><i class="fas fa-rocket me-2" aria-hidden="true"></i>Startup Connect</h4>
                 </div>
                 
-                <nav class="nav flex-column">
-                    <a class="nav-link active" href="<?= url('dashboard') ?>">
-                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                    </a>
-                    <a class="nav-link" href="<?= url('profile/edit') ?>">
-                        <i class="fas fa-user me-2"></i>Profile
-                    </a>
-                    <a class="nav-link" href="<?= url('matches') ?>">
-                        <i class="fas fa-heart me-2"></i>Matches
-                    </a>
+                <ul class="nav flex-column py-3" role="menubar">
+                    <li class="nav-item" role="none">
+                        <a class="nav-link <?= isActiveRoute('dashboard', $currentPath) ? 'active' : '' ?>" 
+                           href="<?= url('dashboard') ?>" role="menuitem" aria-current="<?= isActiveRoute('dashboard', $currentPath) ? 'page' : 'false' ?>">
+                            <i class="fas fa-tachometer-alt" aria-hidden="true"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item" role="none">
+                        <a class="nav-link <?= isActiveRoute('profile', $currentPath) ? 'active' : '' ?>" 
+                           href="<?= url('profile/edit') ?>" role="menuitem" aria-current="<?= isActiveRoute('profile', $currentPath) ? 'page' : 'false' ?>">
+                            <i class="fas fa-user" aria-hidden="true"></i>Profile
+                        </a>
+                    </li>
+                    <li class="nav-item" role="none">
+                        <a class="nav-link <?= isActiveRoute('matches', $currentPath) ? 'active' : '' ?>" 
+                           href="<?= url('matches') ?>" role="menuitem" aria-current="<?= isActiveRoute('matches', $currentPath) ? 'page' : 'false' ?>">
+                            <i class="fas fa-heart" aria-hidden="true"></i>Matches
+                        </a>
+                    </li>
                     <?php if (($_SESSION['user_type'] ?? '') === 'startup'): ?>
-                        <a class="nav-link" href="<?= url('search/investors') ?>">
-                            <i class="fas fa-search me-2"></i>Find Investors
-                        </a>
+                        <li class="nav-item" role="none">
+                            <a class="nav-link <?= isActiveRoute('search/investors', $currentPath) ? 'active' : '' ?>" 
+                               href="<?= url('search/investors') ?>" role="menuitem" aria-current="<?= isActiveRoute('search/investors', $currentPath) ? 'page' : 'false' ?>">
+                                <i class="fas fa-search" aria-hidden="true"></i>Find Investors
+                            </a>
+                        </li>
                     <?php else: ?>
-                        <a class="nav-link" href="<?= url('search/startups') ?>">
-                            <i class="fas fa-search me-2"></i>Find Startups
-                        </a>
+                        <li class="nav-item" role="none">
+                            <a class="nav-link <?= isActiveRoute('search/startups', $currentPath) ? 'active' : '' ?>" 
+                               href="<?= url('search/startups') ?>" role="menuitem" aria-current="<?= isActiveRoute('search/startups', $currentPath) ? 'page' : 'false' ?>">
+                                <i class="fas fa-search" aria-hidden="true"></i>Find Startups
+                            </a>
+                        </li>
                     <?php endif; ?>
-                    <a class="nav-link" href="<?= url('messages') ?>">
-                        <i class="fas fa-envelope me-2"></i>Messages
-                    </a>
+                    <li class="nav-item" role="none">
+                        <a class="nav-link <?= isActiveRoute('messages', $currentPath) ? 'active' : '' ?>" 
+                           href="<?= url('messages') ?>" role="menuitem" aria-current="<?= isActiveRoute('messages', $currentPath) ? 'page' : 'false' ?>">
+                            <i class="fas fa-envelope" aria-hidden="true"></i>Messages
+                        </a>
+                    </li>
                     
-                    <hr class="my-3">
+                    <hr class="my-3 mx-3" style="border-color: rgba(255, 255, 255, 0.2);" role="separator">
                     
-                    <a class="nav-link" href="<?= url('settings') ?>">
-                        <i class="fas fa-cog me-2"></i>Settings
-                    </a>
-                    <a class="nav-link" href="<?= url('logout') ?>">
-                        <i class="fas fa-sign-out-alt me-2"></i>Logout
-                    </a>
-                </nav>
-            </div>
+                    <li class="nav-item" role="none">
+                        <a class="nav-link <?= isActiveRoute('settings', $currentPath) ? 'active' : '' ?>" 
+                           href="<?= url('settings') ?>" role="menuitem" aria-current="<?= isActiveRoute('settings', $currentPath) ? 'page' : 'false' ?>">
+                            <i class="fas fa-cog" aria-hidden="true"></i>Settings
+                        </a>
+                    </li>
+                    <li class="nav-item" role="none">
+                        <a class="nav-link" href="<?= url('logout') ?>" role="menuitem">
+                            <i class="fas fa-sign-out-alt" aria-hidden="true"></i>Logout
+                        </a>
+                    </li>
+                </ul>
+            </nav>
             
             <!-- Main Content -->
-            <div class="col-md-9 col-lg-10 main-content">
+            <div class="main-content">
                 <!-- Top Navigation -->
-                <nav class="navbar navbar-expand-lg navbar-light bg-white rounded mb-4">
-                    <div class="container-fluid">
-                        <span class="navbar-brand mb-0 h1"><?= $title ?? 'Dashboard' ?></span>
-                        
-                        <div class="navbar-nav ms-auto">
-                            <div class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                                    <i class="fas fa-user-circle me-1"></i>
-                                    <?= htmlspecialchars($_SESSION['user_name'] ?? 'User') ?>
-                                </a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="<?= url('profile/edit') ?>">
-                                        <i class="fas fa-user me-2"></i>Profile
-                                    </a></li>
-                                    <li><a class="dropdown-item" href="<?= url('settings') ?>">
-                                        <i class="fas fa-cog me-2"></i>Settings
-                                    </a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="<?= url('logout') ?>">
-                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
-                                    </a></li>
-                                </ul>
-                            </div>
+                <nav class="top-navbar d-flex justify-content-between align-items-center">
+                    <span class="navbar-brand mb-0"><?= $title ?? 'Dashboard' ?></span>
+                    
+                    <div class="d-flex align-items-center">
+                        <div class="dropdown">
+                            <button class="nav-link dropdown-toggle d-flex align-items-center btn btn-link" 
+                               id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" 
+                               aria-label="User menu">
+                                <i class="fas fa-user-circle me-2" style="font-size: 1.5rem;" aria-hidden="true"></i>
+                                <span class="d-none d-md-inline"><?= htmlspecialchars($_SESSION['user_name'] ?? 'User') ?></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="<?= url('profile/edit') ?>">
+                                    <i class="fas fa-user me-2" aria-hidden="true"></i>Profile
+                                </a></li>
+                                <li><a class="dropdown-item" href="<?= url('settings') ?>">
+                                    <i class="fas fa-cog me-2" aria-hidden="true"></i>Settings
+                                </a></li>
+                                <li><hr class="dropdown-divider" role="separator"></li>
+                                <li><a class="dropdown-item" href="<?= url('logout') ?>">
+                                    <i class="fas fa-sign-out-alt me-2" aria-hidden="true"></i>Logout
+                                </a></li>
+                            </ul>
                         </div>
                     </div>
                 </nav>
                 
                 <!-- Page Content -->
-                <?= $content ?>
+                <div class="page-content">
+                    <?= $content ?>
+                </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="<?= asset('vendor/bootstrap/bootstrap.bundle.min.js') ?>"></script>
+    <script src="<?= asset('js/layout.js') ?>"></script>
 </body>
 </html>

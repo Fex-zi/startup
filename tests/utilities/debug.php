@@ -1,12 +1,13 @@
 <?php
 
-require_once 'src/Core/Application.php';
-require_once 'src/Core/Database.php';
+require_once __DIR__ . '/../../src/Core/Application.php';
+require_once __DIR__ . '/../../src/Core/Database.php';
 
 use Core\Application;
 use Core\Database;
 
 echo "<h1>Startup Platform Debug Script</h1>";
+echo "<p><em>Location: tests/utilities/debug.php</em></p>";
 
 // Test 1: Application initialization
 echo "<h2>1. Testing Application Initialization</h2>";
@@ -56,9 +57,9 @@ try {
 // Test 4: Test Models
 echo "<h2>4. Testing Models</h2>";
 try {
-    require_once 'src/Models/BaseModel.php';
-    require_once 'src/Models/User.php';
-    require_once 'src/Models/Industry.php';
+    require_once __DIR__ . '/../../src/Models/BaseModel.php';
+    require_once __DIR__ . '/../../src/Models/User.php';
+    require_once __DIR__ . '/../../src/Models/Industry.php';
     
     $userModel = new Models\User();
     echo "✅ User model instantiated<br>";
@@ -74,9 +75,9 @@ try {
 // Test 5: Test Controllers
 echo "<h2>5. Testing Controllers</h2>";
 try {
-    require_once 'src/Controllers/DashboardController.php';
-    require_once 'src/Controllers/SearchController.php';
-    require_once 'src/Services/SearchService.php';
+    require_once __DIR__ . '/../../src/Controllers/DashboardController.php';
+    require_once __DIR__ . '/../../src/Controllers/SearchController.php';
+    require_once __DIR__ . '/../../src/Services/SearchService.php';
     
     echo "✅ Controller files loaded successfully<br>";
     
@@ -133,8 +134,9 @@ $dirs_to_check = [
 ];
 
 foreach ($dirs_to_check as $dir) {
-    if (file_exists($dir)) {
-        if (is_writable($dir)) {
+    $fullPath = __DIR__ . '/../../' . $dir;
+    if (file_exists($fullPath)) {
+        if (is_writable($fullPath)) {
             echo "✅ Directory '$dir' exists and is writable<br>";
         } else {
             echo "⚠️ Directory '$dir' exists but is not writable<br>";
@@ -145,7 +147,7 @@ foreach ($dirs_to_check as $dir) {
         // Try to create missing directories
         if (strpos($dir, 'storage/') === 0 || strpos($dir, 'public/uploads') === 0) {
             try {
-                if (mkdir($dir, 0755, true)) {
+                if (mkdir($fullPath, 0755, true)) {
                     echo "&nbsp;&nbsp;✅ Created directory '$dir'<br>";
                 } else {
                     echo "&nbsp;&nbsp;❌ Failed to create directory '$dir'<br>";
@@ -169,7 +171,8 @@ $critical_files = [
 ];
 
 foreach ($critical_files as $file) {
-    if (file_exists($file)) {
+    $fullPath = __DIR__ . '/../../' . $file;
+    if (file_exists($fullPath)) {
         echo "✅ Critical file '$file' exists<br>";
     } else {
         echo "❌ Critical file '$file' missing<br>";
@@ -179,7 +182,7 @@ foreach ($critical_files as $file) {
 // Test 10: Router Test
 echo "<h2>10. Testing Router Functionality</h2>";
 try {
-    require_once 'src/Core/Router.php';
+    require_once __DIR__ . '/../../src/Core/Router.php';
     $router = new Core\Router();
     echo "✅ Router class loaded successfully<br>";
     
@@ -194,10 +197,10 @@ try {
 echo "<h2>Debug Complete</h2>";
 echo "<p><strong>Next Steps:</strong></p>";
 echo "<ul>";
-echo "<li><a href='dashboard'>Test Dashboard</a></li>";
-echo "<li><a href='search/investors'>Test Investor Search</a></li>";
-echo "<li><a href='search/startups'>Test Startup Search</a></li>";
-echo "<li><a href='login'>Test Login Page</a></li>";
+echo "<li><a href='" . __DIR__ . "/../../dashboard'>Test Dashboard</a></li>";
+echo "<li><a href='" . __DIR__ . "/../../search/investors'>Test Investor Search</a></li>";
+echo "<li><a href='" . __DIR__ . "/../../search/startups'>Test Startup Search</a></li>";
+echo "<li><a href='" . __DIR__ . "/../../login'>Test Login Page</a></li>";
 echo "</ul>";
 
 // Summary
@@ -219,7 +222,14 @@ if ($allTablesExist) {
     echo "<div style='background: #f8d7da; color: #721c24; padding: 15px; margin: 20px 0; border-radius: 5px;'>";
     echo "<h3>⚠️ System Status: Setup Required</h3>";
     echo "<p>Some database tables are missing. Please run the migration script:</p>";
-    echo "<code>php scripts/migrate.php</code>";
+    echo "<code>php " . __DIR__ . "/../../scripts/migrate.php</code>";
     echo "</div>";
 }
+
+echo "<h2>Navigation</h2>";
+echo "<p>";
+echo "<a href='" . __DIR__ . "/database-diagnostic.php'>Database Diagnostic</a> | ";
+echo "<a href='" . __DIR__ . "/setup-directories.php'>Setup Directories</a> | ";
+echo "<a href='" . __DIR__ . "/test-data-seeder.php'>Seed Test Data</a>";
+echo "</p>";
 ?>

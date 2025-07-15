@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 14, 2025 at 11:00 PM
+-- Generation Time: Jul 15, 2025 at 07:58 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -61,7 +61,8 @@ INSERT INTO `industries` (`id`, `name`, `slug`, `description`, `is_active`, `cre
 (17, 'Cybersecurity', 'cybersecurity', 'Information security and privacy', 1, '2025-07-01 18:18:03', '2025-07-01 18:18:03'),
 (18, 'IoT', 'iot', 'Internet of Things and connected devices', 1, '2025-07-01 18:18:03', '2025-07-01 18:18:03'),
 (19, 'Biotech', 'biotech', 'Biotechnology and life sciences', 1, '2025-07-01 18:18:03', '2025-07-01 18:18:03'),
-(20, 'Consumer Products', 'consumer-products', 'Consumer goods and services', 1, '2025-07-01 18:18:03', '2025-07-01 18:18:03');
+(20, 'Consumer Products', 'consumer-products', 'Consumer goods and services', 1, '2025-07-01 18:18:03', '2025-07-01 18:18:03'),
+(24, 'Education', 'education', 'EdTech and learning platforms', 1, '2025-07-15 17:26:42', '2025-07-15 17:26:42');
 
 -- --------------------------------------------------------
 
@@ -88,6 +89,13 @@ CREATE TABLE `investors` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `investors`
+--
+
+INSERT INTO `investors` (`id`, `user_id`, `investor_type`, `company_name`, `bio`, `preferred_industries`, `investment_stages`, `investment_range_min`, `investment_range_max`, `location`, `portfolio_companies`, `availability_status`, `linkedin_url`, `website`, `avatar_url`, `created_at`, `updated_at`) VALUES
+(1, 2, 'corporate', 'Kokolet Investor', 'I&#039;m a billionaire investor mehn', '[\"7\",\"17\",\"13\"]', '[\"idea\",\"prototype\",\"mvp\",\"early_revenue\",\"growth\"]', 10000.00, 50000.00, 'Utah', NULL, 'actively_investing', '', '', NULL, '2025-07-15 03:06:44', '2025-07-15 03:06:44');
 
 -- --------------------------------------------------------
 
@@ -139,7 +147,18 @@ CREATE TABLE `startups` (
 --
 
 INSERT INTO `startups` (`id`, `user_id`, `company_name`, `slug`, `description`, `industry_id`, `stage`, `employee_count`, `website`, `logo_url`, `pitch_deck_url`, `funding_goal`, `funding_type`, `location`, `is_featured`, `created_at`, `updated_at`) VALUES
-(1, 1, 'Fexzi tech', 'fexzi-tech', 'sgghdhfhtjhtjtj', 7, 'early_revenue', '1', '', NULL, NULL, 20000.00, 'grant', 'usa', 0, '2025-07-01 18:33:56', '2025-07-01 18:33:56');
+(1, 1, 'Fexzi tech', 'fexzi-tech', 'Just a smart kid', 7, 'early_revenue', '1', '', NULL, NULL, 20000.00, 'grant', 'usa', 0, '2025-07-02 00:33:56', '2025-07-02 00:33:56');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `test_diagnostic_table`
+--
+
+CREATE TABLE `test_diagnostic_table` (
+  `id` int(11) NOT NULL,
+  `test_field` varchar(50) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -169,7 +188,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `email`, `password_hash`, `user_type`, `first_name`, `last_name`, `phone`, `location`, `email_verified_at`, `email_verification_token`, `profile_completed`, `is_active`, `created_at`, `updated_at`) VALUES
-(1, 'the.emmanuel.ifeanyi@gmail.com', '$2y$10$ij850VIS/1nqwUyNLtiKYuaxXL9v2Djl3ONpKdcPAkbaJIUboYw.G', 'startup', 'Ifeanyi', 'Ojukwu', NULL, NULL, NULL, '524ca353def78ab9cc150fb55a88b49b', 1, 1, '2025-07-01 18:10:42', '2025-07-14 16:31:33');
+(1, 'the.emmanuel.ifeanyi@gmail.com', '$2y$10$ij850VIS/1nqwUyNLtiKYuaxXL9v2Djl3ONpKdcPAkbaJIUboYw.G', 'startup', 'Ifeanyi', 'Ojukwu', NULL, NULL, NULL, '524ca353def78ab9cc150fb55a88b49b', 1, 1, '2025-07-02 00:10:42', '2025-07-14 22:31:33'),
+(2, 'fexzi87@gmail.com', '$2y$10$ij850VIS/1nqwUyNLtiKYuaxXL9v2Djl3ONpKdcPAkbaJIUboYw.G', 'investor', 'Mr Dimanco', 'investor', NULL, NULL, NULL, '90ce5c4058f35a67881edf1c7da6e29e', 1, 1, '2025-07-15 03:04:45', '2025-07-15 17:56:25');
 
 --
 -- Indexes for dumped tables
@@ -221,6 +241,12 @@ ALTER TABLE `startups`
 ALTER TABLE `startups` ADD FULLTEXT KEY `idx_search` (`company_name`,`description`);
 
 --
+-- Indexes for table `test_diagnostic_table`
+--
+ALTER TABLE `test_diagnostic_table`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -239,31 +265,31 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `industries`
 --
 ALTER TABLE `industries`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT for table `investors`
 --
 ALTER TABLE `investors`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `matches`
 --
 ALTER TABLE `matches`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `startups`
 --
 ALTER TABLE `startups`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- Constraints for dumped tables

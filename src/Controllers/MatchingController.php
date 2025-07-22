@@ -82,7 +82,7 @@ class MatchingController
             'all_matches' => $allMatches,
             'mutual_matches' => $mutualMatches,
             'pending_matches' => $pendingMatches,
-            'stats' => $stats
+            'match_stats' => $stats
         ]);
     }
 
@@ -105,14 +105,14 @@ class MatchingController
         // Get match statistics
         $stats = $this->match->getMatchStats($user['id'], 'investor');
 
-        $this->render('matches/investor', [
+        $this->render('matching/investor_matches', [
             'title' => 'Your Startup Matches',
             'user' => $user,
             'investor' => $investor,
             'all_matches' => $allMatches,
             'mutual_matches' => $mutualMatches,
             'pending_matches' => $pendingMatches,
-            'stats' => $stats
+            'match_stats' => $stats
         ]);
     }
 

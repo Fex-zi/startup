@@ -67,15 +67,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Add loading state for buttons
-    document.querySelectorAll('.btn-primary').forEach(btn => {
-        btn.addEventListener('click', function() {
-            if (this.form && this.type === 'submit') {
-                this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
-                this.disabled = true;
-            }
-        });
-    });
+    // Add loading state for buttons - COMMENTED OUT TO FIX SEARCH ISSUE
+    // document.querySelectorAll('.btn-primary').forEach(btn => {
+    //     btn.addEventListener('click', function() {
+    //         if (this.form && this.type === 'submit') {
+    //             this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+    //             this.disabled = true;
+    //         }
+    //     });
+    // });
 
     // Add smooth hover effects - ripple effect to navigation links
     document.querySelectorAll('.nav-link').forEach(link => {
@@ -274,7 +274,7 @@ function handleFormSubmissions() {
 }
 
 /**
- * Initialize when DOM is ready
+ * Initialize when DOM is ready - COMMENTED OUT TO FIX SEARCH ISSUE
  */
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', handleFormSubmissions);

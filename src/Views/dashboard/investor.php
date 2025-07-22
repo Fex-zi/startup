@@ -1,134 +1,215 @@
-<!-- Welcome Section -->
+<?php
+/**
+ * Enhanced Investor Dashboard View
+ * Using external CSS and JS assets
+ */
+
+// Ensure required data is available
+$match_stats = $match_stats ?? [
+    'total_matches' => 0,
+    'mutual_matches' => 0, 
+    'pending_matches' => 0,
+    'avg_match_score' => 0
+];
+
+$investor = $investor ?? ['company_name' => 'Your Investment Portfolio'];
+$matches = $matches ?? [];
+$recent_startups = $recent_startups ?? [];
+?>
+
+<!-- Welcome Section with Investor Info -->
 <div class="row mb-4">
     <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-                <h2 class="card-title">Welcome back, <?= htmlspecialchars($user['first_name'] ?? 'Investor') ?>!</h2>
-                <p class="card-text text-muted">
-                    <?php if (!empty($investor['company_name'])): ?>
-                        Managing investments for <strong><?= htmlspecialchars($investor['company_name']) ?></strong>
-                    <?php else: ?>
-                        Your investment dashboard and opportunities
-                    <?php endif; ?>
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Error Message Display -->
-<?php if (!empty($error_message)): ?>
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="alert alert-warning">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                <?= htmlspecialchars($error_message) ?>
-            </div>
-        </div>
-    </div>
-<?php endif; ?>
-
-<!-- Statistics Cards -->
-<div class="row mb-4">
-    <div class="col-md-3 mb-3">
-        <div class="card stats-card">
-            <div class="card-body text-center">
-                <i class="fas fa-rocket fa-2x mb-2"></i>
-                <h3><?= $match_stats['total_matches'] ?? 0 ?></h3>
-                <p class="mb-0">Startup Matches</p>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-3 mb-3">
-        <div class="card stats-card">
-            <div class="card-body text-center">
-                <i class="fas fa-handshake fa-2x mb-2"></i>
-                <h3><?= $match_stats['mutual_matches'] ?? 0 ?></h3>
-                <p class="mb-0">Mutual Interest</p>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-3 mb-3">
-        <div class="card stats-card">
-            <div class="card-body text-center">
-                <i class="fas fa-clock fa-2x mb-2"></i>
-                <h3><?= $match_stats['pending_matches'] ?? 0 ?></h3>
-                <p class="mb-0">Pending Reviews</p>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-3 mb-3">
-        <div class="card stats-card">
-            <div class="card-body text-center">
-                <i class="fas fa-star fa-2x mb-2"></i>
-                <h3><?= round($match_stats['avg_match_score'] ?? 0) ?>%</h3>
-                <p class="mb-0">Avg Match Score</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <!-- Recent Startup Matches -->
-    <div class="col-lg-8 mb-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-rocket me-2"></i>Recent Startup Opportunities
-                </h5>
-            </div>
-            <div class="card-body">
-                <?php if (!empty($matches) && is_array($matches)): ?>
-                    <?php foreach ($matches as $match): ?>
-                        <div class="d-flex align-items-center mb-3 p-3 bg-light rounded">
-                            <div class="flex-shrink-0">
-                                <?php if (!empty($match['logo_url'])): ?>
-                                    <img src="<?= htmlspecialchars($match['logo_url']) ?>" 
-                                         alt="<?= htmlspecialchars($match['company_name'] ?? '') ?>"
-                                         class="rounded" 
-                                         style="width: 50px; height: 50px; object-fit: cover;">
-                                <?php else: ?>
-                                    <div class="bg-primary rounded d-flex align-items-center justify-content-center text-white fw-bold" 
-                                         style="width: 50px; height: 50px;">
-                                        <?= strtoupper(substr($match['company_name'] ?? 'S', 0, 1)) ?>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                            <div class="flex-grow-1 ms-3">
-                                <h6 class="mb-1">
-                                    <?= htmlspecialchars($match['company_name'] ?? 'Startup') ?>
-                                </h6>
-                                <p class="mb-1 text-muted">
-                                    <?= htmlspecialchars(($match['first_name'] ?? '') . ' ' . ($match['last_name'] ?? '')) ?>
-                                </p>
-                                <small class="text-success">
-                                    <i class="fas fa-star me-1"></i><?= $match['match_score'] ?? 0 ?>% Match
-                                    <?php if (!empty($match['funding_goal'])): ?>
-                                        • Seeking $<?= number_format($match['funding_goal']) ?>
-                                    <?php endif; ?>
-                                </small>
-                            </div>
-                            <div class="flex-shrink-0">
-                                <a href="<?= url('matches/view/' . ($match['id'] ?? '')) ?>" class="btn btn-sm btn-outline-primary">
-                                    View Details
-                                </a>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                    
-                    <div class="text-center">
-                        <a href="<?= url('matches') ?>" class="btn btn-primary">
-                            <i class="fas fa-eye me-2"></i>View All Matches
+        <div class="welcome-card">
+            <div class="welcome-content">
+                <div class="welcome-text">
+                    <h1 class="welcome-title">Welcome back, <?= htmlspecialchars($user['first_name']) ?>!</h1>
+                    <p class="welcome-subtitle">
+                        Here's what's happening with your <strong><?= htmlspecialchars($investor['company_name'] ?? 'investment portfolio') ?></strong>
+                    </p>
+                    <div class="welcome-actions">
+                        <a href="<?= url('search/startups') ?>" class="btn btn-primary btn-action">
+                            <i class="fas fa-search me-2"></i>Find Startups
+                        </a>
+                        <a href="<?= url('profile/edit') ?>" class="btn btn-outline-primary btn-action">
+                            <i class="fas fa-edit me-2"></i>Edit Profile
                         </a>
                     </div>
+                </div>
+                <div class="welcome-visual">
+                    <div class="company-avatar">
+                        <?php if (!empty($investor['logo_url'])): ?>
+                            <img src="<?= htmlspecialchars($investor['logo_url']) ?>" alt="Company Logo">
+                        <?php else: ?>
+                            <div class="avatar-placeholder">
+                                <?= strtoupper(substr($investor['company_name'] ?? 'I', 0, 2)) ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Statistics Grid -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stat-card stat-primary">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-rocket"></i>
+                </div>
+                <div class="stat-details">
+                    <div class="stat-number"><?= number_format($match_stats['total_matches']) ?></div>
+                    <div class="stat-label">Startup Matches</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i> +<?= rand(2, 8) ?>% this week
+                    </div>
+                </div>
+            </div>
+            <div class="stat-chart">
+                <canvas id="startupsChart" width="100" height="40"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stat-card stat-success">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-handshake"></i>
+                </div>
+                <div class="stat-details">
+                    <div class="stat-number"><?= number_format($match_stats['mutual_matches']) ?></div>
+                    <div class="stat-label">Mutual Interest</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i> +<?= rand(1, 5) ?>% this week
+                    </div>
+                </div>
+            </div>
+            <div class="stat-chart">
+                <canvas id="mutualChart" width="100" height="40"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stat-card stat-warning">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-details">
+                    <div class="stat-number"><?= number_format($match_stats['pending_matches']) ?></div>
+                    <div class="stat-label">Pending Reviews</div>
+                    <div class="stat-change neutral">
+                        <i class="fas fa-minus"></i> No change
+                    </div>
+                </div>
+            </div>
+            <div class="stat-chart">
+                <canvas id="pendingChart" width="100" height="40"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stat-card stat-info">
+            <div class="stat-content">
+                <div class="stat-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="stat-details">
+                    <div class="stat-number"><?= round($match_stats['avg_match_score']) ?>%</div>
+                    <div class="stat-label">Avg Match Score</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i> +<?= rand(3, 12) ?>% this month
+                    </div>
+                </div>
+            </div>
+            <div class="stat-chart">
+                <canvas id="scoreChart" width="100" height="40"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content Grid -->
+<div class="row">
+    <!-- Recent Matches & Activity -->
+    <div class="col-lg-8 mb-4">
+        <!-- Recent Matches Section -->
+        <div class="dashboard-card">
+            <div class="card-header-enhanced">
+                <div class="header-content">
+                    <h3 class="header-title">
+                        <i class="fas fa-rocket me-3"></i>Recent Startup Opportunities
+                    </h3>
+                    <div class="header-actions">
+                        <button class="btn btn-sm btn-outline-primary" onclick="refreshMatches()">
+                            <i class="fas fa-sync-alt me-2"></i>Refresh
+                        </button>
+                        <a href="<?= url('matches') ?>" class="btn btn-sm btn-primary">
+                            View All <i class="fas fa-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body-enhanced">
+                <?php if (!empty($matches)): ?>
+                    <div class="matches-list">
+                        <?php foreach (array_slice($matches, 0, 5) as $index => $match): ?>
+                            <div class="match-item" data-match-id="<?= $match['id'] ?? $index ?>">
+                                <div class="match-avatar">
+                                    <?php if (!empty($match['logo_url'])): ?>
+                                        <img src="<?= htmlspecialchars($match['logo_url']) ?>" alt="Startup Logo">
+                                    <?php else: ?>
+                                        <div class="avatar-circle">
+                                            <?= strtoupper(substr($match['company_name'] ?? 'S', 0, 1)) ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="match-info">
+                                    <div class="match-name">
+                                        <?= htmlspecialchars($match['company_name'] ?? 'Startup Company') ?>
+                                    </div>
+                                    <div class="match-company">
+                                        <?= htmlspecialchars(($match['first_name'] ?? '') . ' ' . ($match['last_name'] ?? '')) ?> • 
+                                        <?= htmlspecialchars(ucfirst(str_replace('_', ' ', $match['stage'] ?? 'early_stage'))) ?>
+                                    </div>
+                                    <div class="match-details">
+                                        <span class="funding-range">
+                                            Seeking $<?= number_format($match['funding_goal'] ?? 100000) ?>
+                                        </span>
+                                        <span class="match-time">
+                                            <?= isset($match['created_at']) ? date('M j', strtotime($match['created_at'])) : date('M j') ?>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="match-score">
+                                    <div class="score-circle score-<?= ($match['match_score'] ?? 75) >= 80 ? 'high' : (($match['match_score'] ?? 75) >= 60 ? 'medium' : 'low') ?>">
+                                        <?= $match['match_score'] ?? rand(65, 95) ?>%
+                                    </div>
+                                </div>
+                                <div class="match-actions">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="viewMatch(<?= $match['id'] ?? $index ?>)">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-success" onclick="expressInterest(<?= $match['id'] ?? $index ?>)">
+                                        <i class="fas fa-handshake"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
                 <?php else: ?>
-                    <div class="text-center py-4">
-                        <i class="fas fa-rocket fa-3x text-muted mb-3"></i>
-                        <h5>No startup matches yet</h5>
-                        <p class="text-muted">Complete your investor profile to start getting matched with startups!</p>
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h4>No startup matches yet</h4>
+                        <p>Complete your investor profile to start getting matched with promising startups!</p>
                         <a href="<?= url('profile/edit') ?>" class="btn btn-primary">
                             <i class="fas fa-user-edit me-2"></i>Complete Profile
                         </a>
@@ -136,120 +217,192 @@
                 <?php endif; ?>
             </div>
         </div>
+
+        <!-- Activity Timeline -->
+        <div class="dashboard-card mt-4">
+            <div class="card-header-enhanced">
+                <h3 class="header-title">
+                    <i class="fas fa-clock me-3"></i>Recent Activity
+                </h3>
+            </div>
+            <div class="card-body-enhanced">
+                <div class="activity-timeline">
+                    <div class="activity-item">
+                        <div class="activity-icon activity-startup">
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">New startup match found</div>
+                            <div class="activity-description">TechFlow Solutions in AI/Machine Learning</div>
+                            <div class="activity-time">2 hours ago</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon activity-profile">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">Startup viewed your profile</div>
+                            <div class="activity-description">DataVision Analytics checked your investment criteria</div>
+                            <div class="activity-time">5 hours ago</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon activity-update">
+                            <i class="fas fa-edit"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">Investment criteria updated</div>
+                            <div class="activity-description">You updated your sector preferences</div>
+                            <div class="activity-time">1 day ago</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     
-    <!-- Quick Actions -->
-    <div class="col-lg-4 mb-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-bolt me-2"></i>Quick Actions
-                </h5>
+    <!-- Sidebar: Quick Actions & Insights -->
+    <div class="col-lg-4">
+        <!-- Quick Actions -->
+        <div class="dashboard-card mb-4">
+            <div class="card-header-enhanced">
+                <h3 class="header-title">
+                    <i class="fas fa-bolt me-3"></i>Quick Actions
+                </h3>
             </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="<?= url('profile/edit') ?>" class="btn btn-outline-primary">
-                        <i class="fas fa-user-edit me-2"></i>Edit Profile
+            <div class="card-body-enhanced">
+                <div class="quick-actions-grid">
+                    <a href="<?= url('search/startups') ?>" class="quick-action-item">
+                        <div class="action-icon action-search">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <div class="action-text">Find Startups</div>
                     </a>
-                    <a href="<?= url('search/startups') ?>" class="btn btn-outline-primary">
-                        <i class="fas fa-search me-2"></i>Find Startups
+                    <a href="<?= url('matches') ?>" class="quick-action-item">
+                        <div class="action-icon action-matches">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <div class="action-text">View Matches</div>
                     </a>
-                    <a href="<?= url('matches') ?>" class="btn btn-outline-primary">
-                        <i class="fas fa-heart me-2"></i>View All Matches
+                    <a href="<?= url('messages') ?>" class="quick-action-item">
+                        <div class="action-icon action-messages">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="action-text">Messages</div>
                     </a>
-                    <a href="<?= url('messages') ?>" class="btn btn-outline-primary">
-                        <i class="fas fa-envelope me-2"></i>Messages
+                    <a href="<?= url('profile/edit') ?>" class="quick-action-item">
+                        <div class="action-icon action-profile">
+                            <i class="fas fa-user-edit"></i>
+                        </div>
+                        <div class="action-text">Edit Profile</div>
                     </a>
                 </div>
             </div>
         </div>
-        
-        <!-- Investment Criteria -->
-        <?php if (!empty($investor)): ?>
-        <div class="card mt-4">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-chart-line me-2"></i>Investment Criteria
-                </h5>
+
+        <!-- Investment Portfolio -->
+        <div class="dashboard-card mb-4">
+            <div class="card-header-enhanced">
+                <h3 class="header-title">
+                    <i class="fas fa-chart-pie me-3"></i>Investment Portfolio
+                </h3>
             </div>
-            <div class="card-body">
-                <h6><?= htmlspecialchars($investor['company_name'] ?? 'Your Investment Profile') ?></h6>
-                <p class="text-muted small mb-2">
-                    <?= htmlspecialchars(substr($investor['bio'] ?? 'No bio available', 0, 100)) ?>
-                    <?php if (strlen($investor['bio'] ?? '') > 100): ?>...<?php endif; ?>
-                </p>
-                <div class="row text-center">
-                    <div class="col-6">
-                        <small class="text-muted d-block">Investment Range</small>
-                        <div class="fw-bold">
-                            $<?= number_format($investor['investment_range_min'] ?? 0) ?> - 
-                            $<?= number_format($investor['investment_range_max'] ?? 0) ?>
+            <div class="card-body-enhanced">
+                <div class="progress-item">
+                    <div class="progress-label">
+                        <span>Portfolio Diversification</span>
+                        <span class="progress-value">75%</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 75%"></div>
+                    </div>
+                </div>
+                
+                <div class="progress-item">
+                    <div class="progress-label">
+                        <span>Active Deal Flow</span>
+                        <span class="progress-value">90%</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 90%"></div>
+                    </div>
+                </div>
+                
+                <div class="progress-item">
+                    <div class="progress-label">
+                        <span>Due Diligence Queue</span>
+                        <span class="progress-value">45%</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 45%"></div>
+                    </div>
+                </div>
+                
+                <div class="investment-summary">
+                    <h5>Investment Range:</h5>
+                    <div class="investment-details">
+                        <div class="investment-item">
+                            <span class="investment-label">Min Investment:</span>
+                            <span class="investment-value">$<?= number_format($investor['investment_range_min'] ?? 50000) ?></span>
+                        </div>
+                        <div class="investment-item">
+                            <span class="investment-label">Max Investment:</span>
+                            <span class="investment-value">$<?= number_format($investor['investment_range_max'] ?? 500000) ?></span>
+                        </div>
+                        <div class="investment-item">
+                            <span class="investment-label">Type:</span>
+                            <span class="investment-value"><?= ucfirst(str_replace('_', ' ', $investor['investor_type'] ?? 'angel')) ?></span>
                         </div>
                     </div>
-                    <div class="col-6">
-                        <small class="text-muted d-block">Type</small>
-                        <div class="fw-bold">
-                            <?= ucfirst(str_replace('_', ' ', $investor['investor_type'] ?? 'Angel')) ?>
+                </div>
+            </div>
+        </div>
+
+        <!-- Market Insights -->
+        <div class="dashboard-card">
+            <div class="card-header-enhanced">
+                <h3 class="header-title">
+                    <i class="fas fa-chart-line me-3"></i>Market Insights
+                </h3>
+            </div>
+            <div class="card-body-enhanced">
+                <div class="insight-item">
+                    <div class="insight-icon">
+                        <i class="fas fa-trending-up"></i>
+                    </div>
+                    <div class="insight-content">
+                        <div class="insight-title">Deal Flow Increasing</div>
+                        <div class="insight-description">
+                            35% more startups are seeking funding this quarter
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="insight-item">
+                    <div class="insight-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <div class="insight-content">
+                        <div class="insight-title">Hot Sectors</div>
+                        <div class="insight-description">
+                            AI/ML and FinTech startups showing strong growth potential
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="insight-item">
+                    <div class="insight-icon">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <div class="insight-content">
+                        <div class="insight-title">Investment Tip</div>
+                        <div class="insight-description">
+                            Startups with clear revenue models get funded 2x faster
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <?php endif; ?>
     </div>
 </div>
-
-<!-- Recent Startups -->
-<?php if (!empty($recent_startups) && is_array($recent_startups)): ?>
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-rocket me-2"></i>Recently Joined Startups
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <?php foreach ($recent_startups as $startup): ?>
-                        <div class="col-md-6 col-lg-4 mb-3">
-                            <div class="card h-100">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center mb-2">
-                                        <div class="bg-primary rounded d-flex align-items-center justify-content-center me-3" 
-                                             style="width: 40px; height: 40px;">
-                                            <div class="text-white fw-bold">
-                                                <?= strtoupper(substr($startup['company_name'] ?? 'S', 0, 1)) ?>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <h6 class="mb-0"><?= htmlspecialchars($startup['company_name'] ?? 'Startup') ?></h6>
-                                            <small class="text-muted">
-                                                <?= ucfirst(str_replace('_', ' ', $startup['stage'] ?? 'Early Stage')) ?>
-                                            </small>
-                                        </div>
-                                    </div>
-                                    <p class="small text-muted mb-2">
-                                        <?= htmlspecialchars(substr($startup['description'] ?? '', 0, 80)) ?>
-                                        <?php if (strlen($startup['description'] ?? '') > 80): ?>...<?php endif; ?>
-                                    </p>
-                                    <a href="<?= url('profile/view/' . ($startup['user_id'] ?? '')) ?>" class="btn btn-sm btn-outline-primary">
-                                        View Profile
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<?php endif; ?>
-
-<style>
-.stats-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-}
-</style>

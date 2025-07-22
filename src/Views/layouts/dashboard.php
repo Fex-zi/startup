@@ -26,6 +26,9 @@ function isActiveRoute($route, $currentPath) {
     <link href="<?= asset('vendor/bootstrap/bootstrap.min.css') ?>" rel="stylesheet">
     <link href="<?= asset('vendor/fontawesome/all.min.css') ?>" rel="stylesheet">
     <link href="<?= asset('css/layout.css') ?>" rel="stylesheet">
+    <link href="<?= asset('css/dashboard.css') ?>" rel="stylesheet">
+    <link href="<?= asset('css/search.css') ?>" rel="stylesheet">
+    <link href="<?= asset('css/matches.css') ?>" rel="stylesheet">
 </head>
 <body>
     <!-- Mobile Toggle Button -->
@@ -141,5 +144,8 @@ function isActiveRoute($route, $currentPath) {
 
     <script src="<?= asset('vendor/bootstrap/bootstrap.bundle.min.js') ?>"></script>
     <script src="<?= asset('js/layout.js') ?>"></script>
+    <script src="<?= asset('js/dashboard.js') ?>"></script>
+    <script src="<?= asset('js/search.js') ?>"></script>
+    <script src="<?= asset('js/matches.js') ?>"></script>
 </body>
 </html>

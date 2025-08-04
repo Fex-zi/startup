@@ -1,24 +1,51 @@
 /**
- * Enhanced Dashboard Styles
+ * Enhanced Dashboard Styles - CLEAN VERSION
  * Shared styles for both startup and investor dashboards
+ * Outline Design Only - All alternatives removed
  */
 
-/* Better contrast for Edit Profile button */
 .btn-outline-primary {
-    color: white !important;
-    border-color: rgba(255, 255, 255, 0.9) !important;
-    background: rgba(255, 255, 255, 0.25) !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    color: #2d3748 !important;
+    border: 2px solid #4299e1 !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
     font-weight: 600 !important;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
 }
 
 .btn-outline-primary:hover {
-    color: #667eea !important;
-    background: white !important;
-    border-color: white !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-    transform: translateY(-1px) !important;
+    color: white !important;
+    background: #4299e1 !important;
+    border-color: #4299e1 !important;
+    box-shadow: 0 8px 25px rgba(66, 153, 225, 0.4) !important;
+    transform: translateY(-2px) !important;
 }
+
+/* ===== FONTAWESOME ICON FIXES ===== */
+
+.fas, .fa-solid {
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+    display: inline-block;
+    font-style: normal;
+    font-variant: normal;
+    text-rendering: auto;
+    line-height: 1;
+}
+
+.far, .fa-regular {
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 400 !important;
+}
+
+.fab, .fa-brands {
+    font-family: "Font Awesome 6 Brands" !important;
+    font-weight: 400 !important;
+}
+
+/* ===== WELCOME CARD ===== */
 
 .welcome-card {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -46,11 +73,9 @@
     0% {
         transform: rotate(45deg) translateX(-100%);
     }
-
     50% {
         transform: rotate(45deg) translateX(100%);
     }
-
     100% {
         transform: rotate(45deg) translateX(100%);
     }
@@ -96,7 +121,6 @@
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3) !important;
 }
 
-/* Enhanced visibility for primary action buttons on gradients */
 .btn-primary.btn-action {
     background: white !important;
     color: #4c51bf !important;
@@ -134,7 +158,8 @@
     font-weight: 700;
 }
 
-/* Enhanced Stat Cards */
+/* ===== ENHANCED STAT CARDS - OUTLINE DESIGN ONLY ===== */
+
 .stat-card {
     background: white;
     border-radius: 16px;
@@ -144,6 +169,7 @@
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    cursor: pointer;
 }
 
 .stat-card::before {
@@ -156,7 +182,7 @@
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
-.stat-card.stat-success::before {
+.stat-card.stat-Success::before {
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
 }
 
@@ -180,28 +206,64 @@
     margin-bottom: 1rem;
 }
 
-.stat-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+/* OUTLINE DESIGN STAT ICONS - CLEAN VERSION */
+.stat-card .stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    background: transparent;
+    border: 3px solid #667eea;
+    color: #667eea;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    font-size: 1.2rem;
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+    margin-bottom: 0.5rem;
+}
+
+.stat-card .stat-icon i {
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+    font-size: 1.5rem !important;
+    display: inline-block !important;
+    line-height: 1 !important;
+    text-rendering: optimizeLegibility !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
 }
 
 .stat-card.stat-success .stat-icon {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-color: #48bb78;
+    color: #48bb78;
 }
 
 .stat-card.stat-warning .stat-icon {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    border-color: #ed8936;
+    color: #ed8936;
 }
 
 .stat-card.stat-info .stat-icon {
-    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    border-color: #4299e1;
+    color: #4299e1;
+}
+
+/* Hover effects for outline stat cards */
+.stat-card:hover .stat-icon {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+}
+
+.stat-card.stat-success:hover .stat-icon {
+    box-shadow: 0 8px 20px rgba(72, 187, 120, 0.2);
+}
+
+.stat-card.stat-warning:hover .stat-icon {
+    box-shadow: 0 8px 20px rgba(237, 137, 54, 0.2);
+}
+
+.stat-card.stat-info:hover .stat-icon {
+    box-shadow: 0 8px 20px rgba(66, 153, 225, 0.2);
 }
 
 .stat-number {
@@ -241,7 +303,8 @@
     margin-top: 1rem;
 }
 
-/* Enhanced Dashboard Cards */
+/* ===== ENHANCED DASHBOARD CARDS ===== */
+
 .dashboard-card {
     background: white;
     border-radius: 16px;
@@ -253,10 +316,11 @@
 
 .dashboard-card:hover {
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
 }
 
 .card-header-enhanced {
-    background: #f8fafc;
+    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
     border-bottom: 1px solid #e5e7eb;
     padding: 1.5rem;
 }
@@ -269,11 +333,16 @@
 
 .header-title {
     font-size: 1.3rem;
-    font-weight: 600;
-    color: #1f2937;
+    font-weight: 700;
+    color: #2d3748;
     margin: 0;
     display: flex;
     align-items: center;
+}
+
+.header-title i {
+    color: #667eea;
+    margin-right: 0.75rem;
 }
 
 .header-actions {
@@ -285,7 +354,8 @@
     padding: 1.5rem;
 }
 
-/* Matches List */
+/* ===== MATCHES LIST ===== */
+
 .matches-list {
     display: flex;
     flex-direction: column;
@@ -392,7 +462,8 @@
     gap: 0.5rem;
 }
 
-/* Empty State */
+/* ===== EMPTY STATE ===== */
+
 .empty-state {
     text-align: center;
     padding: 3rem 2rem;
@@ -410,7 +481,8 @@
     margin-bottom: 0.5rem;
 }
 
-/* Activity Timeline */
+/* ===== ACTIVITY TIMELINE ===== */
+
 .activity-timeline {
     display: flex;
     flex-direction: column;
@@ -447,7 +519,6 @@
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
 }
 
-/* Investor specific activity colors */
 .activity-startup {
     background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
 }
@@ -470,60 +541,68 @@
     margin-top: 0.25rem;
 }
 
-/* Quick Actions Grid */
+/* ===== QUICK ACTIONS GRID ===== */
+
 .quick-actions-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
+    margin-top: 1rem;
 }
 
 .quick-action-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 1rem;
-    background: #f9fafb;
-    border-radius: 12px;
-    border: 1px solid #e5e7eb;
+    padding: 1.5rem 1rem;
+    background: white;
+    border-radius: 16px;
+    border: 1px solid rgba(226, 232, 240, 0.8);
     text-decoration: none;
-    color: #374151;
+    color: #4a5568;
     transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .quick-action-item:hover {
-    background: #f3f4f6;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    color: #374151;
+    color: #667eea;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.15);
     text-decoration: none;
 }
 
 .action-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 12px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    font-size: 1.2rem;
-    margin-bottom: 0.75rem;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.quick-action-item:hover .action-icon {
+    transform: scale(1.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 .action-search {
-    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    background: linear-gradient(135deg, #4299e1 0%, #63b3ed 100%);
 }
 
 .action-matches {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    background: linear-gradient(135deg, #f56565 0%, #fc8181 100%);
 }
 
 .action-messages {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: linear-gradient(135deg, #48bb78 0%, #68d391 100%);
 }
 
 .action-profile {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    background: linear-gradient(135deg, #ed8936 0%, #f6ad55 100%);
 }
 
 .action-text {
@@ -532,7 +611,8 @@
     text-align: center;
 }
 
-/* Progress Bars */
+/* ===== PROGRESS BARS ===== */
+
 .progress-item {
     margin-bottom: 1.5rem;
 }
@@ -600,7 +680,8 @@
     font-weight: 600;
 }
 
-/* Investment Summary */
+/* ===== INVESTMENT SUMMARY ===== */
+
 .investment-summary {
     margin-top: 1.5rem;
     padding-top: 1.5rem;
@@ -636,7 +717,8 @@
     font-size: 0.9rem;
 }
 
-/* Insights */
+/* ===== INSIGHTS ===== */
+
 .insight-item {
     display: flex;
     align-items: flex-start;
@@ -674,19 +756,22 @@
     line-height: 1.4;
 }
 
-/* Toast Notifications */
+/* ===== TOAST NOTIFICATIONS ===== */
+
 .toast {
     position: fixed;
     top: 20px;
     right: 20px;
     background: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
     padding: 1rem 1.5rem;
     border-left: 4px solid;
     transform: translateX(400px);
-    transition: transform 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     z-index: 9999;
+    min-width: 320px;
+    max-width: 420px;
 }
 
 .toast.show {
@@ -710,21 +795,52 @@
     align-items: center;
     font-weight: 500;
     color: #374151;
+    gap: 0.75rem;
 }
 
 .toast-success .toast-content {
     color: #065f46;
 }
 
+.toast-success .toast-content i {
+    color: #10b981;
+}
+
 .toast-error .toast-content {
     color: #7f1d1d;
+}
+
+.toast-error .toast-content i {
+    color: #ef4444;
 }
 
 .toast-info .toast-content {
     color: #1e3a8a;
 }
 
-/* Responsive Design */
+.toast-info .toast-content i {
+    color: #3b82f6;
+}
+
+/* ===== ANIMATION UTILITIES ===== */
+
+.fade-in {
+    animation: fadeIn 0.6s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
 @media (max-width: 768px) {
     .welcome-content {
         flex-direction: column;
@@ -735,6 +851,10 @@
         font-size: 2rem;
     }
 
+    .welcome-subtitle {
+        font-size: 1rem;
+    }
+
     .header-content {
         flex-direction: column;
         gap: 1rem;
@@ -743,6 +863,18 @@
 
     .quick-actions-grid {
         grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .quick-action-item {
+        padding: 1rem 0.75rem;
+    }
+
+    .action-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.25rem;
+        margin-bottom: 0.75rem;
     }
 
     .match-item {
@@ -753,6 +885,29 @@
     .match-actions {
         width: 100%;
         justify-content: flex-end;
+    }
+
+    .toast {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        min-width: auto;
+        max-width: none;
+        transform: translateY(-100%);
+    }
+    
+    .toast.show {
+        transform: translateY(0);
+    }
+
+    .stat-card .stat-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.25rem;
+    }
+    
+    .stat-card .stat-icon i {
+        font-size: 1.25rem !important;
     }
 }
 
@@ -771,5 +926,51 @@
 
     .card-body-enhanced {
         padding: 1rem;
+    }
+
+    .btn-outline-primary,
+    .btn-primary {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+}
+
+/* ===== ACCESSIBILITY ENHANCEMENTS ===== */
+
+.btn-outline-primary:focus,
+.btn-primary:focus {
+    outline: 2px solid #4299e1;
+    outline-offset: 2px;
+}
+
+.quick-action-item:focus {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .btn-outline-primary {
+        border-width: 3px;
+        font-weight: 700;
+    }
+    
+    .toast {
+        border: 2px solid #000;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .toast,
+    .dashboard-card,
+    .quick-action-item,
+    .stat-card,
+    .match-item {
+        transition: none;
+    }
+    
+    .welcome-card::before {
+        animation: none;
     }
 }

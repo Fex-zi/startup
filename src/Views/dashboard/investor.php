@@ -55,7 +55,7 @@ $recent_startups = $recent_startups ?? [];
 <!-- Enhanced Statistics Grid -->
 <div class="row mb-4">
     <div class="col-xl-3 col-md-6 mb-3">
-        <div class="stat-card stat-primary">
+        <div class="stat-card outline-design stat-primary">
             <div class="stat-content">
                 <div class="stat-icon">
                     <i class="fas fa-rocket"></i>
@@ -75,7 +75,7 @@ $recent_startups = $recent_startups ?? [];
     </div>
     
     <div class="col-xl-3 col-md-6 mb-3">
-        <div class="stat-card stat-success">
+        <div class="stat-card outline-design stat-success">
             <div class="stat-content">
                 <div class="stat-icon">
                     <i class="fas fa-handshake"></i>
@@ -95,7 +95,7 @@ $recent_startups = $recent_startups ?? [];
     </div>
     
     <div class="col-xl-3 col-md-6 mb-3">
-        <div class="stat-card stat-warning">
+        <div class="stat-card outline-design stat-warning">
             <div class="stat-content">
                 <div class="stat-icon">
                     <i class="fas fa-clock"></i>
@@ -115,7 +115,7 @@ $recent_startups = $recent_startups ?? [];
     </div>
     
     <div class="col-xl-3 col-md-6 mb-3">
-        <div class="stat-card stat-info">
+        <div class="stat-card outline-design stat-info">
             <div class="stat-content">
                 <div class="stat-icon">
                     <i class="fas fa-star"></i>

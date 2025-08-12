@@ -7,8 +7,8 @@ class Startup extends BaseModel
     protected $table = 'startups';
     protected $fillable = [
         'user_id', 'company_name', 'slug', 'description', 'industry_id', 
-        'stage', 'employee_count', 'website', 'logo_url', 'pitch_deck_url',
-        'funding_goal', 'funding_type', 'location', 'is_featured'
+        'stage', 'employee_count', 'website', 'logo_url', 'pitch_deck_url', 
+        'business_plan_url', 'funding_goal', 'funding_type', 'location', 'is_featured'
     ];
 
     public function createStartup($data)

@@ -1,0 +1,525 @@
+/* Profile Header Cards */
+.profile-header-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.profile-header-card .card-body {
+    padding: 2rem;
+}
+
+.profile-header-card h1 {
+    color: white;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.profile-header-card .lead {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.1rem;
+}
+
+/* Investor Header Variant */
+.profile-header-card.investor-header {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+/* Profile Badges */
+.profile-badges {
+    margin-top: 1rem;
+}
+
+.profile-badges .badge {
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Profile Actions */
+.profile-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-end;
+}
+
+.profile-actions .btn {
+    min-width: 150px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.profile-actions .btn-primary {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    color: white;
+}
+
+.profile-actions .btn-primary:hover {
+    background: white;
+    color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Logo and Profile Picture Styling */
+.logo-preview, .profile-preview {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.logo-preview:hover, .profile-preview:hover {
+    transform: scale(1.05);
+}
+
+.profile-logo-large, .profile-picture-large {
+    margin-bottom: 1rem;
+}
+
+.profile-logo-large img, .profile-picture-large img {
+    border: 4px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.profile-logo-large img:hover, .profile-picture-large img:hover {
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: scale(1.05);
+}
+
+/* Form Styling */
+.profile-form-container {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.profile-form-container .card-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 1px solid #dee2e6;
+    padding: 1.5rem 2rem;
+}
+
+.profile-form-container .card-header h4 {
+    color: #495057;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.profile-form-container .card-body {
+    padding: 2rem;
+}
+
+/* Enhanced Form Controls */
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.form-control.is-valid {
+    border-color: #28a745;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='m2.3 6.73.94-.94 2.94 2.94-2.94 2.94z'/%3e%3c/svg%3e");
+}
+
+.form-control.is-invalid {
+    border-color: #dc3545;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23dc3545' d='m1.41 1.41 2.83 2.83-2.83 2.83 1.41 1.41 2.83-2.83 2.83 2.83 1.41-1.41-2.83-2.83 2.83-2.83-1.41-1.41-2.83 2.83-2.83-2.83z'/%3e%3c/svg%3e");
+}
+
+/* File Upload Styling */
+.file-upload-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.file-upload-wrapper input[type="file"] {
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+}
+
+.file-upload-preview {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border: 2px dashed #dee2e6;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.file-upload-preview:hover {
+    background: #e9ecef;
+    border-color: #667eea;
+}
+
+/* Checkbox and Radio Styling */
+.form-check {
+    padding-left: 2rem;
+    margin-bottom: 1rem;
+}
+
+.form-check-input {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: 0.125rem;
+    border: 2px solid #dee2e6;
+    border-radius: 0.25rem;
+}
+
+.form-check-input:checked {
+    background-color: #667eea;
+    border-color: #667eea;
+}
+
+.form-check-label {
+    font-weight: 500;
+    color: #495057;
+    margin-left: 0.5rem;
+}
+
+/* Industry Selection Controls */
+.industry-controls {
+    margin: 1rem 0;
+}
+
+.industry-controls .btn {
+    font-size: 0.875rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 8px;
+}
+
+/* Investment Metrics */
+.funding-metric, .investment-metric {
+    text-align: center;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 15px;
+    margin-bottom: 1rem;
+    border: 1px solid #dee2e6;
+    transition: all 0.3s ease;
+}
+
+.funding-metric:hover, .investment-metric:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.funding-metric h6, .investment-metric h6 {
+    color: #6c757d;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.funding-metric .h4, .investment-metric .h4 {
+    color: #495057;
+    font-weight: 700;
+    margin-bottom: 0;
+}
+
+/* Statistics Sidebar */
+.stat-item {
+    padding: 1rem 0;
+    border-bottom: 1px solid #f0f0f0;
+    transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+    background: #f8f9fa;
+    padding-left: 0.5rem;
+    border-radius: 8px;
+}
+
+.stat-item:last-child {
+    border-bottom: none;
+}
+
+.stat-item .text-muted {
+    font-weight: 500;
+}
+
+.stat-item .fw-bold {
+    color: #495057;
+    font-weight: 600;
+}
+
+/* Contact Information */
+.contact-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 0;
+    transition: all 0.3s ease;
+}
+
+.contact-item:hover {
+    background: #f8f9fa;
+    padding-left: 0.5rem;
+    border-radius: 8px;
+}
+
+.contact-item i {
+    width: 20px;
+    text-align: center;
+}
+
+.contact-item a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.contact-item a:hover {
+    color: #5a6fd8;
+    text-decoration: underline;
+}
+
+/* Document Items */
+.document-item {
+    text-align: center;
+    padding: 1.5rem;
+    border: 2px solid #e9ecef;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.document-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border-color: #667eea;
+}
+
+.document-item i {
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.document-item:hover i {
+    transform: scale(1.1);
+}
+
+.document-item h6 {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 1rem;
+}
+
+/* Similar Profiles */
+.similar-item {
+    padding: 1rem 0;
+    border-bottom: 1px solid #f0f0f0;
+    transition: all 0.3s ease;
+}
+
+.similar-item:hover {
+    background: #f8f9fa;
+    padding-left: 0.5rem;
+    border-radius: 8px;
+}
+
+.similar-item:last-child {
+    border-bottom: none !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.similar-item img {
+    transition: all 0.3s ease;
+}
+
+.similar-item:hover img {
+    transform: scale(1.1);
+}
+
+/* Investment Items */
+.investment-item {
+    padding: 1rem;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.investment-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border-color: #667eea;
+}
+
+/* Form Validation Feedback */
+.invalid-feedback {
+    display: block;
+    font-size: 0.875rem;
+    color: #dc3545;
+    margin-top: 0.25rem;
+    font-weight: 500;
+}
+
+.valid-feedback {
+    display: block;
+    font-size: 0.875rem;
+    color: #28a745;
+    margin-top: 0.25rem;
+    font-weight: 500;
+}
+
+/* Loading States */
+.btn-loading {
+    position: relative;
+    color: transparent !important;
+}
+
+.btn-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Autosave Indicator */
+.autosave-indicator {
+    font-size: 0.875rem;
+    color: #28a745;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Progress Indicators */
+.profile-progress {
+    margin-bottom: 2rem;
+}
+
+.progress-bar-container {
+    background: #e9ecef;
+    border-radius: 10px;
+    height: 8px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.6s ease;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .profile-header-card .card-body {
+        padding: 1.5rem;
+    }
+    
+    .profile-actions {
+        align-items: stretch;
+        margin-top: 1rem;
+    }
+    
+    .profile-actions .btn {
+        min-width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .profile-logo-large,
+    .profile-picture-large {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .funding-metric,
+    .investment-metric {
+        margin-bottom: 1rem;
+    }
+    
+    .profile-form-container .card-body {
+        padding: 1.5rem;
+    }
+    
+    .row.align-items-center {
+        text-align: center;
+    }
+    
+    .display-6 {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .profile-header-card .card-body {
+        padding: 1rem;
+    }
+    
+    .profile-badges .badge {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+    }
+    
+    .funding-metric,
+    .investment-metric {
+        padding: 1rem;
+    }
+    
+    .display-6 {
+        font-size: 1.25rem;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .profile-actions,
+    .btn,
+    .navbar,
+    .sidebar {
+        display: none !important;
+    }
+    
+    .profile-header-card {
+        background: white !important;
+        color: black !important;
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+    }
+    
+    .card {
+        border: 1px solid #ccc !important;
+        box-shadow: none !important;
+    }
+}

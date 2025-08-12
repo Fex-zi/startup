@@ -8,7 +8,7 @@ class Investor extends BaseModel
     protected $fillable = [
         'user_id', 'investor_type', 'company_name', 'bio', 'preferred_industries',
         'investment_stages', 'investment_range_min', 'investment_range_max',
-        'location', 'portfolio_companies', 'availability_status',
+        'location', 'portfolio_companies', 'availability_status', 'profile_picture_url',
         'linkedin_url', 'website', 'avatar_url'
     ];
 

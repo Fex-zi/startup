@@ -1,6 +1,5 @@
 RewriteEngine On
 
-# Handle Angular and other front-end router, API requests
 RewriteCond %{REQUEST_URI} !^/(api|assets|uploads)/
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d

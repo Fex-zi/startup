@@ -1,0 +1,13 @@
+# Temporary file upload directory
+# Files here should be automatically moved to proper directories
+# This directory is for processing only
+
+# Security: Deny direct access to files
+<Files "*">
+    Deny from all
+</Files>
+
+# Allow only specific scripts to access
+<FilesMatch "\.(php)$">
+    Allow from all
+</FilesMatch>

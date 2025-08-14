@@ -4,45 +4,45 @@ $title = $title ?? ($startup['company_name'] ?? 'Startup Profile');
 ?>
 
 <div class="container-fluid">
+    <!-- FIXED: Enhanced Profile Header -->
     <div class="row">
-        <!-- Profile Header -->
         <div class="col-12 mb-4">
-            <div class="card profile-header-card">
-                <div class="card-body">
+            <div class="card profile-header-card shadow-lg border-0">
+                <div class="card-body p-4">
                     <div class="row align-items-center">
                         <div class="col-md-2 text-center">
                             <div class="profile-logo-large">
-                                <?php if (!empty($startup['logo_path'])): ?>
-                                    <img src="<?= asset('uploads/logos/' . $startup['logo_path']) ?>" 
+                                <?php if (!empty($startup['logo_url'])): ?>
+                                    <img src="<?= upload_url($startup['logo_url']) ?>" 
                                          alt="<?= htmlspecialchars($startup['company_name']) ?> Logo" 
-                                         class="rounded-circle img-fluid" 
-                                         style="width: 120px; height: 120px; object-fit: cover;">
+                                         class="rounded-circle img-fluid shadow" 
+                                         style="width: 140px; height: 140px; object-fit: cover;">
                                 <?php else: ?>
-                                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center mx-auto" 
-                                         style="width: 120px; height: 120px;">
-                                        <i class="fas fa-building text-white" style="font-size: 3rem;"></i>
+                                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center mx-auto shadow" 
+                                         style="width: 140px; height: 140px;">
+                                        <i class="fas fa-building text-white" style="font-size: 4rem;"></i>
                                     </div>
                                 <?php endif; ?>
                             </div>
                         </div>
                         <div class="col-md-7">
-                            <h1 class="display-6 mb-2"><?= htmlspecialchars($startup['company_name']) ?></h1>
-                            <p class="lead text-muted mb-3"><?= htmlspecialchars($startup['tagline'] ?? '') ?></p>
+                            <h1 class="display-5 mb-2 text-white"><?= htmlspecialchars($startup['company_name']) ?></h1>
+                            <p class="lead text-white-50 mb-3"><?= htmlspecialchars($startup['tagline'] ?? 'Innovative startup seeking investment') ?></p>
                             <div class="profile-badges d-flex flex-wrap gap-2">
-                                <span class="badge bg-primary px-3 py-2">
+                                <span class="badge bg-white text-primary px-3 py-2 fs-6">
                                     <i class="fas fa-industry me-1"></i>
-                                    <?= htmlspecialchars($startup['industry_name'] ?? 'Technology') ?>
+                                    <?= htmlspecialchars($industry['name'] ?? 'Technology') ?>
                                 </span>
-                                <span class="badge bg-success px-3 py-2">
+                                <span class="badge bg-success px-3 py-2 fs-6">
                                     <i class="fas fa-chart-line me-1"></i>
                                     <?= ucfirst(str_replace('_', ' ', $startup['stage'] ?? 'early_stage')) ?>
                                 </span>
-                                <span class="badge bg-info px-3 py-2">
+                                <span class="badge bg-info px-3 py-2 fs-6">
                                     <i class="fas fa-map-marker-alt me-1"></i>
                                     <?= htmlspecialchars($startup['location'] ?? 'Remote') ?>
                                 </span>
                                 <?php if (!empty($startup['employee_count'])): ?>
-                                <span class="badge bg-warning px-3 py-2">
+                                <span class="badge bg-warning text-dark px-3 py-2 fs-6">
                                     <i class="fas fa-users me-1"></i>
                                     <?= htmlspecialchars($startup['employee_count']) ?> employees
                                 </span>
@@ -52,17 +52,21 @@ $title = $title ?? ($startup['company_name'] ?? 'Startup Profile');
                         <div class="col-md-3 text-end">
                             <div class="profile-actions">
                                 <?php if (isset($_SESSION['user_type']) && $_SESSION['user_type'] === 'investor'): ?>
-                                    <button class="btn btn-primary btn-lg mb-2" onclick="expressInterest(<?= $startup['id'] ?>)">
-                                        <i class="fas fa-heart me-2"></i>Express Interest
+                                    <button class="btn btn-light btn-lg mb-2 shadow" onclick="expressInterest(<?= $startup['id'] ?>)">
+                                        <i class="fas fa-heart me-2 text-danger"></i>Express Interest
                                     </button>
-                                    <button class="btn btn-outline-secondary mb-2" onclick="sendMessage(<?= $user['id'] ?>)">
+                                    <button class="btn btn-outline-light mb-2" onclick="sendMessage(<?= $user['id'] ?>)">
                                         <i class="fas fa-envelope me-2"></i>Send Message
                                     </button>
+                                <?php elseif (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $user['id']): ?>
+                                    <a href="<?= url('profile/edit') ?>" class="btn btn-light btn-lg mb-2 shadow">
+                                        <i class="fas fa-edit me-2"></i>Edit Profile
+                                    </a>
                                 <?php endif; ?>
                                 <?php if (!empty($startup['website'])): ?>
                                     <a href="<?= htmlspecialchars($startup['website']) ?>" 
                                        target="_blank" 
-                                       class="btn btn-outline-primary">
+                                       class="btn btn-outline-light">
                                         <i class="fas fa-external-link-alt me-2"></i>Visit Website
                                     </a>
                                 <?php endif; ?>
@@ -78,137 +82,149 @@ $title = $title ?? ($startup['company_name'] ?? 'Startup Profile');
         <!-- Main Content -->
         <div class="col-md-8">
             <!-- Company Description -->
-            <div class="card mb-4">
-                <div class="card-header">
+            <div class="card mb-4 shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">
                         <i class="fas fa-info-circle me-2"></i>About <?= htmlspecialchars($startup['company_name']) ?>
                     </h5>
                 </div>
                 <div class="card-body">
-                    <p class="lead"><?= nl2br(htmlspecialchars($startup['description'] ?? '')) ?></p>
+                    <p class="lead lh-lg"><?= nl2br(htmlspecialchars($startup['description'] ?? '')) ?></p>
                 </div>
             </div>
 
             <!-- Funding Information -->
-            <div class="card mb-4">
-                <div class="card-header">
+            <div class="card mb-4 shadow-sm border-0">
+                <div class="card-header bg-success text-white">
                     <h5 class="mb-0">
-                        <i class="fas fa-dollar-sign me-2"></i>Funding Information
+                        <i class="fas fa-dollar-sign me-2"></i>Investment Information
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="funding-metric">
-                                <h6 class="text-muted">Funding Goal</h6>
-                                <p class="h4 text-primary">
-                                    $<?= number_format($startup['funding_goal'] ?? 0) ?>
+                                <h6 class="text-muted mb-2">Funding Goal</h6>
+                                <p class="h3 text-success mb-0">
+                                    <?= format_currency($startup['funding_goal'] ?? 0) ?>
                                 </p>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="funding-metric">
-                                <h6 class="text-muted">Funding Type</h6>
-                                <p class="h5">
-                                    <?= ucfirst(str_replace('_', ' ', $startup['funding_type'] ?? 'Not specified')) ?>
+                                <h6 class="text-muted mb-2">Funding Type</h6>
+                                <p class="h5 mb-0">
+                                    <span class="badge bg-primary fs-6 px-3 py-2">
+                                        <?= ucfirst(str_replace('_', ' ', $startup['funding_type'] ?? 'Not specified')) ?>
+                                    </span>
                                 </p>
                             </div>
                         </div>
                     </div>
-                    
-                    <?php if (!empty($startup['current_revenue'])): ?>
-                    <div class="row mt-3">
-                        <div class="col-md-6">
-                            <div class="funding-metric">
-                                <h6 class="text-muted">Annual Revenue</h6>
-                                <p class="h5 text-success">
-                                    $<?= number_format($startup['current_revenue']) ?>
+                </div>
+            </div>
+
+            <!-- FIXED: Documents Section - Now Properly Displays Files -->
+            <?php if (!empty($startup['pitch_deck_url']) || !empty($startup['business_plan_url'])): ?>
+            <div class="card mb-4 shadow-sm border-0">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-alt me-2"></i>Documents & Resources
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <?php if (!empty($startup['pitch_deck_url'])): ?>
+                        <div class="col-md-6 mb-3">
+                            <div class="document-item p-4 border border-primary rounded-3 h-100 text-center">
+                                <div class="mb-3">
+                                    <i class="fas fa-presentation text-primary fa-3x"></i>
+                                </div>
+                                <h6 class="fw-bold mb-2">Pitch Deck</h6>
+                                <p class="text-muted small mb-3">
+                                    <?= htmlspecialchars(basename($startup['pitch_deck_url'])) ?>
                                 </p>
+                                <a href="<?= upload_url($startup['pitch_deck_url']) ?>" 
+                                   target="_blank" 
+                                   class="btn btn-primary">
+                                    <i class="fas fa-download me-1"></i>Download PDF
+                                </a>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="funding-metric">
-                                <h6 class="text-muted">Monthly Growth Rate</h6>
-                                <p class="h5 text-info">
-                                    <?= htmlspecialchars($startup['growth_rate'] ?? 'N/A') ?>%
+                        <?php endif; ?>
+                        
+                        <?php if (!empty($startup['business_plan_url'])): ?>
+                        <div class="col-md-6 mb-3">
+                            <div class="document-item p-4 border border-danger rounded-3 h-100 text-center">
+                                <div class="mb-3">
+                                    <i class="fas fa-file-pdf text-danger fa-3x"></i>
+                                </div>
+                                <h6 class="fw-bold mb-2">Business Plan</h6>
+                                <p class="text-muted small mb-3">
+                                    <?= htmlspecialchars(basename($startup['business_plan_url'])) ?>
                                 </p>
+                                <a href="<?= upload_url($startup['business_plan_url']) ?>" 
+                                   target="_blank" 
+                                   class="btn btn-danger">
+                                    <i class="fas fa-download me-1"></i>Download PDF
+                                </a>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <?php if (isset($_SESSION['user_type']) && $_SESSION['user_type'] === 'investor'): ?>
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="alert alert-info d-flex align-items-center">
+                                <i class="fas fa-info-circle me-3 fa-2x"></i>
+                                <div>
+                                    <h6 class="alert-heading mb-1">Investor Access</h6>
+                                    <p class="mb-0">As an investor, you can download and review these documents. Express interest to start a conversation!</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <?php endif; ?>
                 </div>
             </div>
-
-            <!-- Team Information -->
-            <?php if (!empty($startup['team_info'])): ?>
-            <div class="card mb-4">
-                <div class="card-header">
+            <?php else: ?>
+            <!-- Show placeholder when no documents are uploaded -->
+            <div class="card mb-4 shadow-sm border-0">
+                <div class="card-header bg-warning text-dark">
                     <h5 class="mb-0">
-                        <i class="fas fa-users me-2"></i>Team
+                        <i class="fas fa-file-alt me-2"></i>Documents & Resources
                     </h5>
                 </div>
-                <div class="card-body">
-                    <p><?= nl2br(htmlspecialchars($startup['team_info'])) ?></p>
-                </div>
-            </div>
-            <?php endif; ?>
-
-            <!-- Documents -->
-            <?php if (!empty($startup['pitch_deck_path']) || !empty($startup['business_plan_path'])): ?>
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-file-alt me-2"></i>Documents
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <?php if (!empty($startup['pitch_deck_path'])): ?>
-                        <div class="col-md-6 mb-3">
-                            <div class="document-item p-3 border rounded">
-                                <i class="fas fa-presentation text-primary fa-2x mb-2"></i>
-                                <h6>Pitch Deck</h6>
-                                <a href="<?= asset('uploads/documents/' . $startup['pitch_deck_path']) ?>" 
-                                   target="_blank" 
-                                   class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-download me-1"></i>Download
-                                </a>
-                            </div>
-                        </div>
-                        <?php endif; ?>
-                        
-                        <?php if (!empty($startup['business_plan_path'])): ?>
-                        <div class="col-md-6 mb-3">
-                            <div class="document-item p-3 border rounded">
-                                <i class="fas fa-file-pdf text-danger fa-2x mb-2"></i>
-                                <h6>Business Plan</h6>
-                                <a href="<?= asset('uploads/documents/' . $startup['business_plan_path']) ?>" 
-                                   target="_blank" 
-                                   class="btn btn-sm btn-outline-danger">
-                                    <i class="fas fa-download me-1"></i>Download
-                                </a>
-                            </div>
-                        </div>
-                        <?php endif; ?>
-                    </div>
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-folder-open text-muted fa-4x mb-3"></i>
+                    <h6 class="text-muted">No documents uploaded yet</h6>
+                    <p class="text-muted">This startup hasn't uploaded their pitch deck or business plan yet.</p>
+                    <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $user['id']): ?>
+                        <a href="<?= url('profile/edit') ?>" class="btn btn-primary">
+                            <i class="fas fa-upload me-2"></i>Upload Documents
+                        </a>
+                    <?php endif; ?>
                 </div>
             </div>
             <?php endif; ?>
         </div>
 
-        <!-- Sidebar -->
+        <!-- Enhanced Sidebar -->
         <div class="col-md-4">
             <!-- Quick Stats -->
-            <div class="card mb-4">
-                <div class="card-header">
+            <div class="card mb-4 shadow-sm border-0">
+                <div class="card-header bg-info text-white">
                     <h6 class="mb-0">
                         <i class="fas fa-chart-bar me-2"></i>Company Overview
                     </h6>
                 </div>
                 <div class="card-body">
                     <div class="stat-item mb-3">
-                        <div class="d-flex justify-content-between">
-                            <span class="text-muted">Founded</span>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted">
+                                <i class="fas fa-calendar-alt me-2"></i>Founded
+                            </span>
                             <span class="fw-bold">
                                 <?= htmlspecialchars($startup['founded_year'] ?? date('Y')) ?>
                             </span>
@@ -216,8 +232,10 @@ $title = $title ?? ($startup['company_name'] ?? 'Startup Profile');
                     </div>
                     
                     <div class="stat-item mb-3">
-                        <div class="d-flex justify-content-between">
-                            <span class="text-muted">Stage</span>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted">
+                                <i class="fas fa-rocket me-2"></i>Stage
+                            </span>
                             <span class="fw-bold">
                                 <?= ucfirst(str_replace('_', ' ', $startup['stage'] ?? 'Early')) ?>
                             </span>
@@ -225,17 +243,21 @@ $title = $title ?? ($startup['company_name'] ?? 'Startup Profile');
                     </div>
                     
                     <div class="stat-item mb-3">
-                        <div class="d-flex justify-content-between">
-                            <span class="text-muted">Team Size</span>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted">
+                                <i class="fas fa-users me-2"></i>Team Size
+                            </span>
                             <span class="fw-bold">
                                 <?= htmlspecialchars($startup['employee_count'] ?? 'Not specified') ?>
                             </span>
                         </div>
                     </div>
                     
-                    <div class="stat-item mb-3">
-                        <div class="d-flex justify-content-between">
-                            <span class="text-muted">Location</span>
+                    <div class="stat-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted">
+                                <i class="fas fa-map-marker-alt me-2"></i>Location
+                            </span>
                             <span class="fw-bold">
                                 <?= htmlspecialchars($startup['location'] ?? 'Remote') ?>
                             </span>
@@ -245,8 +267,8 @@ $title = $title ?? ($startup['company_name'] ?? 'Startup Profile');
             </div>
 
             <!-- Contact Information -->
-            <div class="card mb-4">
-                <div class="card-header">
+            <div class="card mb-4 shadow-sm border-0">
+                <div class="card-header bg-secondary text-white">
                     <h6 class="mb-0">
                         <i class="fas fa-address-card me-2"></i>Contact Information
                     </h6>
@@ -254,53 +276,41 @@ $title = $title ?? ($startup['company_name'] ?? 'Startup Profile');
                 <div class="card-body">
                     <div class="contact-item mb-3">
                         <i class="fas fa-user text-muted me-2"></i>
-                        <span><?= htmlspecialchars($user['first_name'] . ' ' . $user['last_name']) ?></span>
+                        <span class="fw-bold"><?= htmlspecialchars($user['first_name'] . ' ' . $user['last_name']) ?></span>
+                        <small class="text-muted d-block">Founder</small>
                     </div>
-                    
-                    <?php if (!empty($user['email']) && ($user['email_public'] ?? false)): ?>
-                    <div class="contact-item mb-3">
-                        <i class="fas fa-envelope text-muted me-2"></i>
-                        <a href="mailto:<?= htmlspecialchars($user['email']) ?>">
-                            <?= htmlspecialchars($user['email']) ?>
-                        </a>
-                    </div>
-                    <?php endif; ?>
-                    
-                    <?php if (!empty($user['phone']) && ($user['phone_public'] ?? false)): ?>
-                    <div class="contact-item mb-3">
-                        <i class="fas fa-phone text-muted me-2"></i>
-                        <a href="tel:<?= htmlspecialchars($user['phone']) ?>">
-                            <?= htmlspecialchars($user['phone']) ?>
-                        </a>
-                    </div>
-                    <?php endif; ?>
                     
                     <?php if (!empty($startup['website'])): ?>
                     <div class="contact-item mb-3">
                         <i class="fas fa-globe text-muted me-2"></i>
-                        <a href="<?= htmlspecialchars($startup['website']) ?>" target="_blank">
+                        <a href="<?= htmlspecialchars($startup['website']) ?>" target="_blank" class="text-decoration-none">
                             <?= htmlspecialchars(parse_url($startup['website'], PHP_URL_HOST)) ?>
                         </a>
                     </div>
                     <?php endif; ?>
+                    
+                    <div class="contact-item">
+                        <i class="fas fa-calendar text-muted me-2"></i>
+                        <span>Joined <?= date('M Y', strtotime($user['created_at'])) ?></span>
+                    </div>
                 </div>
             </div>
 
             <!-- Similar Startups -->
             <?php if (!empty($similar_startups)): ?>
-            <div class="card">
-                <div class="card-header">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
                     <h6 class="mb-0">
                         <i class="fas fa-lightbulb me-2"></i>Similar Startups
                     </h6>
                 </div>
                 <div class="card-body">
                     <?php foreach (array_slice($similar_startups, 0, 3) as $similar): ?>
-                    <div class="similar-item mb-3 pb-3 border-bottom">
+                    <div class="similar-item mb-3 pb-3 <?= end($similar_startups) !== $similar ? 'border-bottom' : '' ?>">
                         <div class="d-flex align-items-center">
                             <div class="me-3">
-                                <?php if (!empty($similar['logo_path'])): ?>
-                                    <img src="<?= asset('uploads/logos/' . $similar['logo_path']) ?>" 
+                                <?php if (!empty($similar['logo_url'])): ?>
+                                    <img src="<?= upload_url($similar['logo_url']) ?>" 
                                          alt="Logo" 
                                          class="rounded-circle" 
                                          style="width: 40px; height: 40px; object-fit: cover;">
@@ -336,39 +346,34 @@ $title = $title ?? ($startup['company_name'] ?? 'Startup Profile');
 .profile-header-card {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    border: none;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-}
-
-.profile-header-card .card-body {
-    padding: 2rem;
+    border-radius: 20px;
 }
 
 .profile-badges .badge {
-    font-size: 0.9rem;
     font-weight: 500;
+    border-radius: 25px;
 }
 
 .funding-metric {
     text-align: center;
-    padding: 1rem;
-    background: #f8f9fa;
-    border-radius: 10px;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 15px;
     margin-bottom: 1rem;
 }
 
 .document-item {
-    text-align: center;
     transition: all 0.3s ease;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
 }
 
 .document-item:hover {
     transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
 .stat-item {
-    padding: 0.75rem 0;
+    padding: 1rem 0;
     border-bottom: 1px solid #f0f0f0;
 }
 
@@ -378,13 +383,26 @@ $title = $title ?? ($startup['company_name'] ?? 'Startup Profile');
 
 .contact-item {
     display: flex;
-    align-items: center;
+    align-items-center;
+    padding: 0.5rem 0;
 }
 
-.similar-item:last-child {
-    border-bottom: none !important;
-    margin-bottom: 0 !important;
-    padding-bottom: 0 !important;
+.card {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.card-header {
+    border-bottom: none;
+    font-weight: 600;
+}
+
+.shadow-sm {
+    box-shadow: 0 2px 4px rgba(0,0,0,.05) !important;
+}
+
+.shadow-lg {
+    box-shadow: 0 10px 25px rgba(0,0,0,.1) !important;
 }
 </style>
 
@@ -410,7 +428,7 @@ function expressInterest(startupId) {
             // Update button state
             const btn = event.target.closest('button');
             btn.innerHTML = '<i class="fas fa-check me-2"></i>Interest Sent';
-            btn.classList.remove('btn-primary');
+            btn.classList.remove('btn-light');
             btn.classList.add('btn-success');
             btn.disabled = true;
         } else {
@@ -424,7 +442,7 @@ function expressInterest(startupId) {
 }
 
 function sendMessage(userId) {
-    // For now, redirect to messages page
-    window.location.href = '<?= url('messages/conversation/') ?>' + userId;
+    // For now, redirect to messages page (will be implemented in messaging system)
+    showToast('Messaging feature coming soon!', 'info');
 }
 </script>

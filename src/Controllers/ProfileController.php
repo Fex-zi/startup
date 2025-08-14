@@ -16,8 +16,8 @@ class ProfileController
     private $industry;
     private $security;
 
-    // FIXED: Use simple directory structure that actually exists
-    private const UPLOAD_BASE_DIR = '/assets/uploads/';
+    // FIXED: Clean, single upload directory structure
+    private const UPLOAD_BASE_DIR = 'assets/uploads/';
     private const ALLOWED_IMAGE_TYPES = ['jpg', 'jpeg', 'png', 'webp'];
     private const ALLOWED_DOCUMENT_TYPES = ['pdf', 'doc', 'docx', 'ppt', 'pptx'];
     private const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
@@ -31,22 +31,33 @@ class ProfileController
         $this->industry = new Industry();
         $this->security = Security::getInstance();
         
-        // Ensure upload directories exist
+        // Initialize upload directories
         $this->initializeUploadDirectories();
     }
 
     /**
-     * FIXED: Create simple directory structure that matches working setup
+     * FIXED: Create clean directory structure in public/assets/uploads/
      */
     private function initializeUploadDirectories()
     {
-        $uploadRoot = $_SERVER['DOCUMENT_ROOT'] . self::UPLOAD_BASE_DIR;
+        // Determine correct document root based on request path
+        $documentRoot = $_SERVER['DOCUMENT_ROOT'];
+        if (!file_exists($documentRoot . '/public')) {
+            $documentRoot = dirname($_SERVER['DOCUMENT_ROOT']) . '/public';
+        }
         
-        // Simple directory structure that matches the diagnostic results
+        $uploadRoot = $documentRoot . '/' . self::UPLOAD_BASE_DIR;
+        
+        // Clean, organized directory structure
         $directories = [
-            'logos',      // For company logos
-            'profiles',   // For profile pictures  
-            'documents'   // For all documents (pitch decks, business plans, etc.)
+            'logos',                    // Company logos
+            'profiles',                 // Profile pictures  
+            'documents',                // Documents root
+            'documents/pitch-decks',    // Pitch decks
+            'documents/business-plans', // Business plans
+            'documents/financials',     // Financial documents
+            'documents/legal',          // Legal documents
+            'temp'                      // Temporary processing
         ];
 
         foreach ($directories as $dir) {
@@ -56,7 +67,119 @@ class ProfileController
                     error_log("Failed to create upload directory: " . $fullPath);
                 }
             }
+            
+            // Add .htaccess for security to document directories
+            if (strpos($dir, 'documents') !== false) {
+                $htaccessPath = $fullPath . '/.htaccess';
+                if (!file_exists($htaccessPath)) {
+                    file_put_contents($htaccessPath, "deny from all\n");
+                }
+            }
         }
+    }
+
+    /**
+     * Show current user's own profile (convenience route)
+     * SECURE: Only shows own profile, cannot access others
+     */
+    public function index()
+    {
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: ' . url('login'));
+            exit;
+        }
+        
+        $userId = $_SESSION['user_id'];
+        $this->viewProfile($userId, true); // true = isOwnProfile
+    }
+
+    /**
+     * SECURE: View profile with proper authorization checks
+     */
+    public function viewSecure($id = null)
+    {
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: ' . url('login'));
+            exit;
+        }
+
+        $currentUserId = $_SESSION['user_id'];
+        $targetUserId = (int)$id;
+        
+        // SECURITY: Only allow viewing own profile or public access with restrictions
+        if ($currentUserId !== $targetUserId) {
+            // Check if current user has permission to view this profile
+            if (!$this->canViewProfile($currentUserId, $targetUserId)) {
+                $_SESSION['toast_message'] = 'You do not have permission to view this profile';
+                $_SESSION['toast_type'] = 'error';
+                header('Location: ' . url('dashboard'));
+                exit;
+            }
+        }
+        
+        $isOwnProfile = ($currentUserId === $targetUserId);
+        $this->viewProfile($targetUserId, $isOwnProfile);
+    }
+
+    /**
+     * View startup profile by slug (public access)
+     */
+    public function viewStartupBySlug($slug)
+    {
+        $startup = $this->startup->findBy('slug', $slug);
+        if (!$startup) {
+            $_SESSION['toast_message'] = 'Startup not found';
+            $_SESSION['toast_type'] = 'error';
+            header('Location: ' . url('search/startups'));
+            exit;
+        }
+        
+        $this->viewProfile($startup['user_id'], false); // false = not own profile
+    }
+
+    /**
+     * View investor profile (public access with restrictions)
+     */
+    public function viewInvestorPublic($id)
+    {
+        if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'startup') {
+            $_SESSION['toast_message'] = 'Only startups can view investor profiles';
+            $_SESSION['toast_type'] = 'error';
+            header('Location: ' . url('dashboard'));
+            exit;
+        }
+        
+        $this->viewProfile($id, false); // false = not own profile
+    }
+
+    /**
+     * Check if current user can view target profile
+     */
+    private function canViewProfile($currentUserId, $targetUserId)
+    {
+        // Users can always view their own profile
+        if ($currentUserId === $targetUserId) {
+            return true;
+        }
+        
+        $currentUser = $this->user->find($currentUserId);
+        $targetUser = $this->user->find($targetUserId);
+        
+        if (!$currentUser || !$targetUser) {
+            return false;
+        }
+        
+        // Business rules: Investors can view startups, Startups can view investors
+        if ($currentUser['user_type'] === 'investor' && $targetUser['user_type'] === 'startup') {
+            return true;
+        }
+        
+        if ($currentUser['user_type'] === 'startup' && $targetUser['user_type'] === 'investor') {
+            return true;
+        }
+        
+        // Same type users cannot view each other's private profiles
+        return false;
     }
 
     public function create()
@@ -121,7 +244,7 @@ class ProfileController
                 $this->createInvestorProfile($userId, $uploadedFiles);
             }
         } catch (\Exception $e) {
-            $_SESSION['toast_message'] = 'Upload failed: ' . $e->getMessage();
+            $_SESSION['toast_message'] = 'Profile creation failed: ' . $e->getMessage();
             $_SESSION['toast_type'] = 'error';
             header('Location: ' . url('profile/create'));
             exit;
@@ -189,50 +312,111 @@ class ProfileController
                 $this->updateInvestorProfile($userId, $uploadedFiles);
             }
         } catch (\Exception $e) {
-            $_SESSION['toast_message'] = 'Upload failed: ' . $e->getMessage();
+            $_SESSION['toast_message'] = 'Profile update failed: ' . $e->getMessage();
             $_SESSION['toast_type'] = 'error';
             header('Location: ' . url('profile/edit'));
             exit;
         }
     }
 
-    public function view($id)
+    /**
+     * Core profile viewing logic with enhanced security
+     */
+    private function viewProfile($id, $isOwnProfile)
     {
+        $currentUserId = $_SESSION['user_id'] ?? null;
+        
         $user = $this->user->getUserWithProfile($id);
         if (!$user) {
+            $_SESSION['toast_message'] = 'Profile not found';
+            $_SESSION['toast_type'] = 'error';
             header('Location: ' . url('dashboard'));
             exit;
         }
 
+        // SECURITY: Determine what information to show based on profile ownership and user types
+        $showPrivateInfo = $isOwnProfile;
+        $showContactInfo = $isOwnProfile || ($user['user_type'] === 'startup' && isset($_SESSION['user_type']) && $_SESSION['user_type'] === 'investor');
+        $showDocuments = $isOwnProfile || (isset($_SESSION['user_type']) && $_SESSION['user_type'] === 'investor');
+        $showFullDetails = $isOwnProfile || $this->canViewProfile($currentUserId, $id);
+
         if ($user['user_type'] === 'startup') {
             $startup = $this->startup->findBy('user_id', $id);
+            if (!$startup) {
+                $_SESSION['toast_message'] = 'Startup profile not found';
+                $_SESSION['toast_type'] = 'error';
+                header('Location: ' . url('dashboard'));
+                exit;
+            }
+            
             $industry = $this->industry->find($startup['industry_id']);
             
-            $this->render('profiles/startup/view', [
+            // Get similar startups (exclude current one)
+            $similarStartups = $this->startup->getSimilarStartups(
+                $startup['industry_id'], 
+                $startup['id'], 
+                3
+            );
+            
+            // Choose the right view based on whether it's own profile or public view
+            $viewTemplate = $isOwnProfile ? 'profiles/startup/view_own' : 'profiles/startup/public';
+            
+            $this->render($viewTemplate, [
                 'title' => $startup['company_name'] . ' - Startup Profile',
                 'user' => $user,
                 'startup' => $startup,
-                'industry' => $industry
+                'industry' => $industry,
+                'similar_startups' => $similarStartups,
+                'is_own_profile' => $isOwnProfile,
+                'show_private_info' => $showPrivateInfo,
+                'show_contact_info' => $showContactInfo,
+                'show_documents' => $showDocuments,
+                'show_full_details' => $showFullDetails,
+                'csrf_token' => $this->security->generateCSRFToken()
             ]);
         } else {
             $investor = $this->investor->findBy('user_id', $id);
+            if (!$investor) {
+                $_SESSION['toast_message'] = 'Investor profile not found';
+                $_SESSION['toast_type'] = 'error';
+                header('Location: ' . url('dashboard'));
+                exit;
+            }
             
-            $this->render('profiles/investor/view', [
+            // FIXED: Get actual industry names for display
+            $preferredIndustryNames = [];
+            if (!empty($investor['preferred_industries'])) {
+                $industryIds = json_decode($investor['preferred_industries'], true) ?? [];
+                if (!empty($industryIds)) {
+                    $preferredIndustryNames = $this->industry->getIndustryNamesByIds($industryIds);
+                }
+            }
+            
+            // Choose the right view based on whether it's own profile or public view
+            $viewTemplate = $isOwnProfile ? 'profiles/investor/view_own' : 'profiles/investor/public';
+            
+            $this->render($viewTemplate, [
                 'title' => $user['first_name'] . ' ' . $user['last_name'] . ' - Investor Profile',
                 'user' => $user,
-                'investor' => $investor
+                'investor' => $investor,
+                'preferred_industry_names' => $preferredIndustryNames,
+                'is_own_profile' => $isOwnProfile,
+                'show_private_info' => $showPrivateInfo,
+                'show_contact_info' => $showContactInfo,
+                'show_full_details' => $showFullDetails,
+                'csrf_token' => $this->security->generateCSRFToken()
             ]);
         }
     }
 
     /**
-     * FIXED: Simple file upload handling that works with existing directories
+     * FIXED: Simplified file upload handling with consistent paths
      */
     private function handleFileUploads()
     {
         $uploadedFiles = [];
 
-        // FIXED: Use simple file mapping that matches existing directories
+        // FIXED: Simple file mapping with consistent paths
         $fileMapping = [
             'logo' => [
                 'dir' => 'logos',
@@ -245,17 +429,12 @@ class ProfileController
                 'size' => self::MAX_IMAGE_SIZE
             ],
             'pitch_deck' => [
-                'dir' => 'documents',
+                'dir' => 'documents/pitch-decks',
                 'types' => self::ALLOWED_DOCUMENT_TYPES,
                 'size' => self::MAX_DOCUMENT_SIZE
             ],
             'business_plan' => [
-                'dir' => 'documents',
-                'types' => self::ALLOWED_DOCUMENT_TYPES,
-                'size' => self::MAX_DOCUMENT_SIZE
-            ],
-            'financial_document' => [
-                'dir' => 'documents',
+                'dir' => 'documents/business-plans',
                 'types' => self::ALLOWED_DOCUMENT_TYPES,
                 'size' => self::MAX_DOCUMENT_SIZE
             ]
@@ -270,13 +449,8 @@ class ProfileController
                         $config['types'], 
                         $config['size']
                     );
-                    
-                    // Log successful upload for debugging
-                    error_log("Successfully uploaded file: " . $field . " to " . $uploadedFiles[$field]);
-                    
                 } catch (\Exception $e) {
-                    error_log("File upload failed for " . $field . ": " . $e->getMessage());
-                    throw $e;
+                    throw new \Exception("Failed to upload {$field}: " . $e->getMessage());
                 }
             }
         }
@@ -285,84 +459,55 @@ class ProfileController
     }
 
     /**
-     * FIXED: File upload processing that actually saves to the file system
+     * FIXED: Consistent file upload processing with proper paths
      */
     private function processFileUpload($file, $directory, $allowedExtensions, $maxSize)
     {
-        // FIXED: Use simple path structure
-        $uploadDir = $_SERVER['DOCUMENT_ROOT'] . self::UPLOAD_BASE_DIR . $directory . '/';
+        // Determine correct document root
+        $documentRoot = $_SERVER['DOCUMENT_ROOT'];
+        if (!file_exists($documentRoot . '/public')) {
+            $documentRoot = dirname($_SERVER['DOCUMENT_ROOT']) . '/public';
+        }
+        
+        $uploadDir = $documentRoot . '/' . self::UPLOAD_BASE_DIR . $directory . '/';
         
         // Ensure directory exists
         if (!file_exists($uploadDir)) {
             if (!mkdir($uploadDir, 0755, true)) {
-                throw new \Exception('Cannot create upload directory: ' . $uploadDir);
+                throw new \Exception('Cannot create upload directory');
             }
         }
 
         // Validate file size
         if ($file['size'] > $maxSize) {
-            throw new \Exception('File size exceeds maximum allowed size of ' . ($maxSize / 1024 / 1024) . 'MB');
+            throw new \Exception('File size exceeds limit of ' . ($maxSize / 1024 / 1024) . 'MB');
         }
 
-        // Validate file type by extension
+        // Validate file type
         $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
         if (!in_array($fileExtension, $allowedExtensions)) {
             throw new \Exception('Invalid file type. Allowed: ' . implode(', ', $allowedExtensions));
         }
 
-        // Additional MIME type validation for security
-        $this->validateMimeType($file['tmp_name'], $fileExtension);
-
         // Generate secure filename
         $filename = $this->generateSecureFilename($file['name']);
         $filePath = $uploadDir . $filename;
 
-        // FIXED: Actually move the uploaded file
+        // Move uploaded file
         if (move_uploaded_file($file['tmp_name'], $filePath)) {
-            // Return relative web path for database storage
-            $relativePath = self::UPLOAD_BASE_DIR . $directory . '/' . $filename;
-            error_log("File successfully moved to: " . $filePath . " (relative: " . $relativePath . ")");
-            return $relativePath;
+            // Return web-accessible path for database storage
+            return self::UPLOAD_BASE_DIR . $directory . '/' . $filename;
         } else {
-            throw new \Exception('Failed to move uploaded file to: ' . $filePath);
+            throw new \Exception('Failed to save uploaded file');
         }
     }
 
-    /**
-     * MIME type validation for additional security
-     */
-    private function validateMimeType($filePath, $extension)
-    {
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $mimeType = finfo_file($finfo, $filePath);
-        finfo_close($finfo);
-
-        $allowedMimes = [
-            'jpg' => ['image/jpeg'],
-            'jpeg' => ['image/jpeg'],
-            'png' => ['image/png'],
-            'webp' => ['image/webp'],
-            'pdf' => ['application/pdf'],
-            'doc' => ['application/msword'],
-            'docx' => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-            'ppt' => ['application/vnd.ms-powerpoint'],
-            'pptx' => ['application/vnd.openxmlformats-officedocument.presentationml.presentation']
-        ];
-
-        if (!in_array($mimeType, $allowedMimes[$extension] ?? [])) {
-            throw new \Exception('File content does not match extension. Expected: ' . implode(', ', $allowedMimes[$extension] ?? []) . ', Got: ' . $mimeType);
-        }
-    }
-
-    /**
-     * Generate secure filename
-     */
     private function generateSecureFilename($originalName)
     {
         $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
         $baseName = pathinfo($originalName, PATHINFO_FILENAME);
         $safeName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $baseName);
-        $safeName = substr($safeName, 0, 50); // Limit length
+        $safeName = substr($safeName, 0, 50);
         
         return uniqid($safeName . '_', true) . '.' . $extension;
     }
@@ -377,16 +522,13 @@ class ProfileController
             'stage' => $_POST['stage'] ?? '',
             'employee_count' => $_POST['employee_count'] ?? '',
             'location' => $this->security->sanitizeInput($_POST['location']),
-            'founding_date' => $_POST['founding_date'] ?? null,
-            'website_url' => $this->security->sanitizeInput($_POST['website_url']),
+            'website' => $this->security->sanitizeInput($_POST['website'] ?? ''),
             'funding_goal' => (float)($_POST['funding_goal'] ?? 0),
             'funding_type' => $_POST['funding_type'] ?? '',
-            'min_investment' => (float)($_POST['min_investment'] ?? 0),
-            'max_investment' => (float)($_POST['max_investment'] ?? 0),
-            'equity_offered' => (float)($_POST['equity_offered'] ?? 0),
+            'slug' => $this->generateSlug($_POST['company_name'])
         ];
 
-        // FIXED: Handle file uploads properly
+        // FIXED: Handle file uploads with correct database column names
         if (isset($uploadedFiles['logo'])) {
             $data['logo_url'] = $uploadedFiles['logo'];
         }
@@ -405,16 +547,18 @@ class ProfileController
         $data = [
             'user_id' => $userId,
             'investor_type' => $_POST['investor_type'] ?? '',
+            'company_name' => $this->security->sanitizeInput($_POST['company_name'] ?? ''),
             'bio' => $this->security->sanitizeInput($_POST['bio']),
             'location' => $this->security->sanitizeInput($_POST['location']),
-            'min_investment' => (float)($_POST['min_investment'] ?? 0),
-            'max_investment' => (float)($_POST['max_investment'] ?? 0),
-            'preferred_stages' => $_POST['preferred_stages'] ?? '',
-            'portfolio_size' => $_POST['portfolio_size'] ?? '',
-            'investment_philosophy' => $this->security->sanitizeInput($_POST['investment_philosophy'])
+            'investment_range_min' => (float)($_POST['investment_range_min'] ?? 0),
+            'investment_range_max' => (float)($_POST['investment_range_max'] ?? 0),
+            'preferred_industries' => json_encode($_POST['preferred_industries'] ?? []),
+            'investment_stages' => json_encode($_POST['investment_stages'] ?? []),
+            'website' => $this->security->sanitizeInput($_POST['website'] ?? ''),
+            'linkedin_url' => $this->security->sanitizeInput($_POST['linkedin_url'] ?? '')
         ];
 
-        // FIXED: Handle file uploads properly
+        // FIXED: Handle file uploads
         if (isset($uploadedFiles['profile_picture'])) {
             $data['profile_picture_url'] = $uploadedFiles['profile_picture'];
         }
@@ -437,16 +581,13 @@ class ProfileController
             'stage' => $_POST['stage'] ?? '',
             'employee_count' => $_POST['employee_count'] ?? '',
             'location' => $this->security->sanitizeInput($_POST['location']),
-            'founding_date' => $_POST['founding_date'] ?? null,
-            'website_url' => $this->security->sanitizeInput($_POST['website_url']),
+            'website' => $this->security->sanitizeInput($_POST['website'] ?? ''),
             'funding_goal' => (float)($_POST['funding_goal'] ?? 0),
             'funding_type' => $_POST['funding_type'] ?? '',
-            'min_investment' => (float)($_POST['min_investment'] ?? 0),
-            'max_investment' => (float)($_POST['max_investment'] ?? 0),
-            'equity_offered' => (float)($_POST['equity_offered'] ?? 0),
+            'slug' => $this->generateSlug($_POST['company_name'])
         ];
 
-        // FIXED: Handle file uploads and cleanup
+        // FIXED: Handle file uploads and cleanup old files
         if (isset($uploadedFiles['logo'])) {
             $data['logo_url'] = $uploadedFiles['logo'];
             $this->deleteOldFile($existingStartup['logo_url'] ?? '');
@@ -473,13 +614,15 @@ class ProfileController
 
         $data = [
             'investor_type' => $_POST['investor_type'] ?? '',
+            'company_name' => $this->security->sanitizeInput($_POST['company_name'] ?? ''),
             'bio' => $this->security->sanitizeInput($_POST['bio']),
             'location' => $this->security->sanitizeInput($_POST['location']),
-            'min_investment' => (float)($_POST['min_investment'] ?? 0),
-            'max_investment' => (float)($_POST['max_investment'] ?? 0),
-            'preferred_stages' => $_POST['preferred_stages'] ?? '',
-            'portfolio_size' => $_POST['portfolio_size'] ?? '',
-            'investment_philosophy' => $this->security->sanitizeInput($_POST['investment_philosophy'])
+            'investment_range_min' => (float)($_POST['investment_range_min'] ?? 0),
+            'investment_range_max' => (float)($_POST['investment_range_max'] ?? 0),
+            'preferred_industries' => json_encode($_POST['preferred_industries'] ?? []),
+            'investment_stages' => json_encode($_POST['investment_stages'] ?? []),
+            'website' => $this->security->sanitizeInput($_POST['website'] ?? ''),
+            'linkedin_url' => $this->security->sanitizeInput($_POST['linkedin_url'] ?? '')
         ];
 
         // FIXED: Handle file uploads and cleanup
@@ -489,6 +632,14 @@ class ProfileController
         }
 
         $this->validateAndUpdateProfile('investor', $userId, $existingInvestor, $data, $uploadedFiles);
+    }
+
+    private function generateSlug($text)
+    {
+        $slug = strtolower(trim($text));
+        $slug = preg_replace('/[^a-z0-9-]/', '-', $slug);
+        $slug = preg_replace('/-+/', '-', $slug);
+        return trim($slug, '-');
     }
 
     private function validateAndStoreProfile($type, $userId, $data)
@@ -504,8 +655,8 @@ class ProfileController
         ] : [
             'investor_type' => ['required'],
             'bio' => ['required'],
-            'min_investment' => ['numeric'],
-            'max_investment' => ['numeric']
+            'investment_range_min' => ['numeric'],
+            'investment_range_max' => ['numeric']
         ];
 
         $errors = $this->security->validateInput($data, $validationRules);
@@ -548,8 +699,8 @@ class ProfileController
         ] : [
             'investor_type' => ['required'],
             'bio' => ['required'],
-            'min_investment' => ['numeric'],
-            'max_investment' => ['numeric']
+            'investment_range_min' => ['numeric'],
+            'investment_range_max' => ['numeric']
         ];
 
         $errors = $this->security->validateInput($data, $validationRules);
@@ -566,7 +717,7 @@ class ProfileController
             if ($updated) {
                 $_SESSION['toast_message'] = 'Profile updated successfully!';
                 $_SESSION['toast_type'] = 'success';
-                header('Location: ' . url('dashboard'));
+                header('Location: ' . url('profile/view/' . $userId));
                 exit;
             } else {
                 throw new \Exception('Failed to update profile');
@@ -582,20 +733,24 @@ class ProfileController
     }
 
     /**
-     * FIXED: Safe file deletion with proper path handling
+     * FIXED: Safe file deletion with correct paths
      */
     private function deleteOldFile($relativePath)
     {
         if (empty($relativePath)) return;
         
-        $fullPath = $_SERVER['DOCUMENT_ROOT'] . $relativePath;
+        // Determine correct document root
+        $documentRoot = $_SERVER['DOCUMENT_ROOT'];
+        if (!file_exists($documentRoot . '/public')) {
+            $documentRoot = dirname($_SERVER['DOCUMENT_ROOT']) . '/public';
+        }
+        
+        // Handle both old format (with uploads prefix) and new format
+        $cleanPath = str_replace('assets/uploads/', '', $relativePath);
+        $fullPath = $documentRoot . '/' . self::UPLOAD_BASE_DIR . $cleanPath;
         
         if (file_exists($fullPath) && is_file($fullPath)) {
-            if (unlink($fullPath)) {
-                error_log("Successfully deleted old file: " . $fullPath);
-            } else {
-                error_log("Failed to delete old file: " . $fullPath);
-            }
+            unlink($fullPath);
         }
     }
 
@@ -609,7 +764,7 @@ class ProfileController
             'user' => $user,
             'industries' => $industries,
             'errors' => $errors,
-            'old' => $data,
+            'old_input' => $data,
             'csrf_token' => $this->security->generateCSRFToken()
         ]);
     }
@@ -625,7 +780,7 @@ class ProfileController
             $type => $existing,
             'industries' => $industries,
             'errors' => $errors,
-            'old' => $data,
+            'old_input' => $data,
             'csrf_token' => $this->security->generateCSRFToken()
         ]);
     }
@@ -645,7 +800,6 @@ class ProfileController
         } else {
             echo "<h1>View not found: {$view}</h1>";
             echo "<p>Expected file: {$viewFile}</p>";
-            echo "<p>Profile view will be created.</p>";
             echo "<p><a href='" . url('dashboard') . "'>Return to Dashboard</a></p>";
         }
 

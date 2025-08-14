@@ -56,8 +56,8 @@ function isActiveRoute($route, $currentPath) {
                     </li>
                     <li class="nav-item" role="none">
                         <a class="nav-link <?= isActiveRoute('profile', $currentPath) ? 'active' : '' ?>" 
-                           href="<?= url('profile/edit') ?>" role="menuitem" aria-current="<?= isActiveRoute('profile', $currentPath) ? 'page' : 'false' ?>">
-                            <i class="fas fa-user" aria-hidden="true"></i>Profile
+                           href="<?= url('profile') ?>" role="menuitem" aria-current="<?= isActiveRoute('profile', $currentPath) ? 'page' : 'false' ?>">
+                            <i class="fas fa-user" aria-hidden="true"></i>My Profile
                         </a>
                     </li>
                     <li class="nav-item" role="none">
@@ -119,8 +119,11 @@ function isActiveRoute($route, $currentPath) {
                                 <span class="d-none d-md-inline"><?= htmlspecialchars($_SESSION['user_name'] ?? 'User') ?></span>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="navbarDropdown">
-                                <li><a class="dropdown-item" href="<?= url('profile/edit') ?>">
-                                    <i class="fas fa-user me-2" aria-hidden="true"></i>Profile
+                                <li><a class="dropdown-item" href="<?= url('profile') ?>">
+                                    <i class="fas fa-user me-2" aria-hidden="true"></i>View Profile
+                                </a></li>
+                                <li><a class="dropdown-item" href="<?= url('profile/settings') ?>">
+                                    <i class="fas fa-edit me-2" aria-hidden="true"></i>Edit Profile
                                 </a></li>
                                 <li><a class="dropdown-item" href="<?= url('settings') ?>">
                                     <i class="fas fa-cog me-2" aria-hidden="true"></i>Settings

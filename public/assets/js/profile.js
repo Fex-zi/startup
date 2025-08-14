@@ -1,504 +1,386 @@
-// Profile page functionality with form validation, file uploads, and interactions
+/**
+ * Profile Management JavaScript
+ * Handles profile interactions, file uploads, and form validation
+ */
 
-(function() {
-    'use strict';
-
-    // Initialize when DOM is loaded
-    document.addEventListener('DOMContentLoaded', function() {
-        initializeProfileFunctionality();
-    });
-
-    function initializeProfileFunctionality() {
-        // Image preview functionality
-        setupImagePreviews();
-        
-        // Form validation
-        setupFormValidation();
-        
-        // Investment range validation (for investors)
-        setupInvestmentValidation();
-        
-        // File upload validation
-        setupFileValidation();
-        
-        // Industry selection helpers
-        setupIndustrySelection();
-        
-        // Form autosave (optional)
-        setupAutosave();
-        
-        // Profile interaction buttons
-        setupProfileInteractions();
+class ProfileManager {
+    constructor() {
+        this.init();
     }
 
-    // Image Preview Functionality
-    function setupImagePreviews() {
-        // Logo/Profile Picture Preview
-        const imageInputs = [
-            { input: '#logo', preview: '.logo-preview' },
-            { input: '#profile_picture', preview: '.profile-preview' }
-        ];
+    init() {
+        this.setupFileUploads();
+        this.setupFormValidation();
+        this.setupImagePreviews();
+        this.setupTooltips();
+        this.setupInteractiveElements();
+    }
 
-        imageInputs.forEach(({ input, preview }) => {
-            const inputElement = document.querySelector(input);
-            const previewElement = document.querySelector(preview);
-            
-            if (inputElement && previewElement) {
-                inputElement.addEventListener('change', function(e) {
-                    handleImagePreview(e, previewElement, input.includes('logo'));
-                });
-            }
+    /**
+     * Enhanced file upload handling with validation and preview
+     */
+    setupFileUploads() {
+        const fileInputs = document.querySelectorAll('input[type="file"]');
+        
+        fileInputs.forEach(input => {
+            input.addEventListener('change', (e) => {
+                this.handleFileUpload(e.target);
+            });
         });
     }
 
-    function handleImagePreview(e, previewContainer, isLogo) {
-        const file = e.target.files[0];
+    handleFileUpload(input) {
+        const file = input.files[0];
         if (!file) return;
 
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
-            showToast('Please select a valid image file', 'error');
-            e.target.value = '';
+        // File size validation
+        const maxSize = this.getMaxFileSize(input.name);
+        if (file.size > maxSize) {
+            showToast(
+                `File size too large. Maximum size is ${Math.round(maxSize / 1024 / 1024)}MB`, 
+                'error'
+            );
+            input.value = '';
             return;
         }
 
-        // Validate file size (2MB)
-        if (file.size > 2 * 1024 * 1024) {
-            showToast('Image size must be less than 2MB', 'error');
-            e.target.value = '';
+        // File type validation
+        const allowedTypes = this.getAllowedFileTypes(input.name);
+        const fileExtension = file.name.split('.').pop().toLowerCase();
+        
+        if (!allowedTypes.includes(fileExtension)) {
+            showToast(
+                `Invalid file type. Allowed: ${allowedTypes.join(', ')}`, 
+                'error'
+            );
+            input.value = '';
             return;
         }
 
+        // Show success message and preview if applicable
+        showToast(`File "${file.name}" selected successfully`, 'success');
+        
+        if (input.name === 'logo' || input.name === 'profile_picture') {
+            this.showImagePreview(input, file);
+        }
+
+        // Update UI to show file selected
+        this.updateFileInputUI(input, file);
+    }
+
+    getMaxFileSize(inputName) {
+        return inputName === 'logo' || inputName === 'profile_picture' 
+            ? 2 * 1024 * 1024  // 2MB for images
+            : 10 * 1024 * 1024; // 10MB for documents
+    }
+
+    getAllowedFileTypes(inputName) {
+        if (inputName === 'logo' || inputName === 'profile_picture') {
+            return ['jpg', 'jpeg', 'png', 'webp'];
+        }
+        return ['pdf', 'doc', 'docx', 'ppt', 'pptx'];
+    }
+
+    showImagePreview(input, file) {
         const reader = new FileReader();
-        reader.onload = function(e) {
-            const iconClass = isLogo ? 'fa-building' : 'fa-user';
-            const altText = isLogo ? 'Company Logo' : 'Profile Picture';
-            
-            let existingImg = previewContainer.querySelector('img');
-            if (existingImg) {
-                existingImg.src = e.target.result;
-            } else {
-                // Create new image element
-                previewContainer.innerHTML = `
-                    <img src="${e.target.result}" 
-                         alt="${altText}" 
-                         class="rounded-circle" 
-                         style="width: 80px; height: 80px; object-fit: cover;">
-                `;
+        reader.onload = (e) => {
+            const preview = document.querySelector('.logo-preview img');
+            if (preview) {
+                preview.src = e.target.result;
+                preview.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    preview.style.transform = 'scale(1)';
+                }, 300);
             }
         };
         reader.readAsDataURL(file);
     }
 
-    // Form Validation
-    function setupFormValidation() {
+    updateFileInputUI(input, file) {
+        // Find any associated file info display and update it
+        const infoElement = input.parentElement.querySelector('.file-info');
+        if (infoElement) {
+            infoElement.innerHTML = `
+                <small class="text-success">
+                    <i class="fas fa-check-circle me-1"></i>
+                    Selected: ${file.name}
+                </small>
+            `;
+        }
+    }
+
+    /**
+     * Enhanced form validation with real-time feedback
+     */
+    setupFormValidation() {
         const forms = document.querySelectorAll('form');
         
-        forms.forEach(function(form) {
-            form.addEventListener('submit', function(event) {
-                if (!validateForm(form)) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                }
-                form.classList.add('was-validated');
-            }, false);
+        forms.forEach(form => {
+            form.addEventListener('submit', (e) => {
+                this.handleFormSubmit(e, form);
+            });
 
-            // Real-time validation
-            const inputs = form.querySelectorAll('input, textarea, select');
-            inputs.forEach(input => {
-                input.addEventListener('blur', function() {
-                    validateField(input);
+            // Real-time validation for key fields
+            const requiredFields = form.querySelectorAll('[required]');
+            requiredFields.forEach(field => {
+                field.addEventListener('blur', () => {
+                    this.validateField(field);
                 });
             });
         });
     }
 
-    function validateForm(form) {
-        let isValid = true;
-        const requiredFields = form.querySelectorAll('[required]');
-        
-        requiredFields.forEach(field => {
-            if (!validateField(field)) {
-                isValid = false;
+    handleFormSubmit(e, form) {
+        if (!form.checkValidity()) {
+            e.preventDefault();
+            e.stopPropagation();
+            showToast('Please fill in all required fields', 'error');
+            
+            // Focus on first invalid field
+            const firstInvalid = form.querySelector(':invalid');
+            if (firstInvalid) {
+                firstInvalid.focus();
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
-        });
-
-        // Custom validations
-        if (!validateCustomRules(form)) {
-            isValid = false;
+        } else {
+            this.showFormSubmissionState(form);
         }
-
-        if (!isValid) {
-            showToast('Please fill in all required fields correctly', 'error');
-        }
-
-        return isValid;
+        
+        form.classList.add('was-validated');
     }
 
-    function validateField(field) {
-        const value = field.value.trim();
-        let isValid = true;
-        let errorMessage = '';
-
-        // Required field validation
-        if (field.hasAttribute('required') && !value) {
-            isValid = false;
-            errorMessage = 'This field is required';
-        }
-
-        // Email validation
-        if (field.type === 'email' && value && !isValidEmail(value)) {
-            isValid = false;
-            errorMessage = 'Please enter a valid email address';
-        }
-
-        // URL validation
-        if (field.type === 'url' && value && !isValidURL(value)) {
-            isValid = false;
-            errorMessage = 'Please enter a valid URL';
-        }
-
-        // Number validation
-        if (field.type === 'number' && value) {
-            const min = field.getAttribute('min');
-            const max = field.getAttribute('max');
-            const numValue = parseFloat(value);
-            
-            if (isNaN(numValue)) {
-                isValid = false;
-                errorMessage = 'Please enter a valid number';
-            } else if (min && numValue < parseFloat(min)) {
-                isValid = false;
-                errorMessage = `Value must be at least ${min}`;
-            } else if (max && numValue > parseFloat(max)) {
-                isValid = false;
-                errorMessage = `Value must be no more than ${max}`;
-            }
-        }
-
-        // Update field UI
-        updateFieldValidationUI(field, isValid, errorMessage);
-        
-        return isValid;
-    }
-
-    function validateCustomRules(form) {
-        let isValid = true;
-
-        // Investment range validation (for investor forms)
-        const minInvestment = form.querySelector('#min_investment');
-        const maxInvestment = form.querySelector('#max_investment');
-        
-        if (minInvestment && maxInvestment) {
-            const minVal = parseFloat(minInvestment.value);
-            const maxVal = parseFloat(maxInvestment.value);
-            
-            if (minVal && maxVal && minVal >= maxVal) {
-                updateFieldValidationUI(maxInvestment, false, 'Maximum must be greater than minimum');
-                isValid = false;
-            }
-        }
-
-        // Company name uniqueness (could be enhanced with AJAX)
-        const companyNameField = form.querySelector('#company_name');
-        if (companyNameField && companyNameField.value.trim().length < 2) {
-            updateFieldValidationUI(companyNameField, false, 'Company name must be at least 2 characters');
-            isValid = false;
-        }
-
-        return isValid;
-    }
-
-    function updateFieldValidationUI(field, isValid, errorMessage) {
-        // Remove existing validation classes
-        field.classList.remove('is-valid', 'is-invalid');
-        
-        // Remove existing error message
-        const existingError = field.parentNode.querySelector('.invalid-feedback');
-        if (existingError && !existingError.textContent.trim()) {
-            existingError.remove();
-        }
-
-        if (!isValid) {
-            field.classList.add('is-invalid');
-            
-            // Add error message if it doesn't exist
-            if (!existingError && errorMessage) {
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'invalid-feedback';
-                errorDiv.textContent = errorMessage;
-                field.parentNode.appendChild(errorDiv);
-            }
-        } else if (field.value.trim()) {
+    validateField(field) {
+        if (field.checkValidity()) {
+            field.classList.remove('is-invalid');
             field.classList.add('is-valid');
+        } else {
+            field.classList.remove('is-valid');
+            field.classList.add('is-invalid');
         }
     }
 
-    // Investment Range Validation
-    function setupInvestmentValidation() {
-        const minInvestment = document.getElementById('min_investment');
-        const maxInvestment = document.getElementById('max_investment');
+    showFormSubmissionState(form) {
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (!submitBtn) return;
 
-        if (minInvestment && maxInvestment) {
-            minInvestment.addEventListener('change', function() {
-                validateInvestmentRange(minInvestment, maxInvestment);
+        const originalContent = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Updating...';
+        submitBtn.disabled = true;
+
+        // Reset after 5 seconds in case of network issues
+        setTimeout(() => {
+            submitBtn.innerHTML = originalContent;
+            submitBtn.disabled = false;
+        }, 5000);
+    }
+
+    /**
+     * Image preview functionality
+     */
+    setupImagePreviews() {
+        const logoInput = document.getElementById('logo');
+        const profilePictureInput = document.getElementById('profile_picture');
+
+        if (logoInput) {
+            logoInput.addEventListener('change', (e) => {
+                this.previewImage(e.target, '.logo-preview');
             });
+        }
 
-            maxInvestment.addEventListener('change', function() {
-                validateInvestmentRange(minInvestment, maxInvestment);
+        if (profilePictureInput) {
+            profilePictureInput.addEventListener('change', (e) => {
+                this.previewImage(e.target, '.profile-preview');
             });
         }
     }
 
-    function validateInvestmentRange(minField, maxField) {
-        const minVal = parseFloat(minField.value);
-        const maxVal = parseFloat(maxField.value);
-
-        if (minVal && maxVal) {
-            if (minVal >= maxVal) {
-                showToast('Minimum investment should be less than maximum investment', 'error');
-                maxField.focus();
-                updateFieldValidationUI(maxField, false, 'Must be greater than minimum investment');
-            } else {
-                updateFieldValidationUI(minField, true, '');
-                updateFieldValidationUI(maxField, true, '');
-            }
-        }
-    }
-
-    // File Upload Validation
-    function setupFileValidation() {
-        const fileInputs = document.querySelectorAll('input[type="file"]');
-        
-        fileInputs.forEach(input => {
-            input.addEventListener('change', function(e) {
-                validateFileUpload(e.target);
-            });
-        });
-    }
-
-    function validateFileUpload(input) {
+    previewImage(input, previewSelector) {
         const file = input.files[0];
         if (!file) return;
 
-        const inputName = input.name;
-        let maxSize, allowedTypes;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const previewContainer = document.querySelector(previewSelector);
+            if (!previewContainer) return;
 
-        // Set limits based on input type
-        if (inputName === 'logo' || inputName === 'profile_picture') {
-            maxSize = 2 * 1024 * 1024; // 2MB
-            allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-        } else if (inputName === 'pitch_deck' || inputName === 'business_plan') {
-            maxSize = 10 * 1024 * 1024; // 10MB
-            allowedTypes = ['application/pdf', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'];
-        }
-
-        // Validate file size
-        if (file.size > maxSize) {
-            showToast(`File size exceeds ${formatFileSize(maxSize)} limit`, 'error');
-            input.value = '';
-            return false;
-        }
-
-        // Validate file type
-        if (!allowedTypes.includes(file.type)) {
-            showToast('Invalid file type. Please check allowed formats.', 'error');
-            input.value = '';
-            return false;
-        }
-
-        return true;
-    }
-
-    // Industry Selection Helpers
-    function setupIndustrySelection() {
-        const industryContainer = document.querySelector('[name="preferred_industries[]"]');
-        if (!industryContainer) return;
-
-        // Add "Select All" / "Clear All" functionality
-        addIndustryControls();
-    }
-
-    function addIndustryControls() {
-        const industrySection = document.querySelector('label[for="preferred_industries"]');
-        if (!industrySection) return;
-
-        const controlsDiv = document.createElement('div');
-        controlsDiv.className = 'industry-controls mt-2 mb-2';
-        controlsDiv.innerHTML = `
-            <button type="button" class="btn btn-sm btn-outline-primary me-2" onclick="selectAllIndustries()">
-                Select All
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearAllIndustries()">
-                Clear All
-            </button>
-        `;
-        
-        industrySection.parentNode.insertBefore(controlsDiv, industrySection.nextSibling);
-    }
-
-    // Make these functions global for button onclick
-    window.selectAllIndustries = function() {
-        const checkboxes = document.querySelectorAll('input[name="preferred_industries[]"]');
-        checkboxes.forEach(checkbox => checkbox.checked = true);
-    };
-
-    window.clearAllIndustries = function() {
-        const checkboxes = document.querySelectorAll('input[name="preferred_industries[]"]');
-        checkboxes.forEach(checkbox => checkbox.checked = false);
-    };
-
-    // Autosave Functionality (Optional)
-    function setupAutosave() {
-        const form = document.querySelector('form[action*="profile"]');
-        if (!form) return;
-
-        const inputs = form.querySelectorAll('input, textarea, select');
-        let autosaveTimeout;
-
-        inputs.forEach(input => {
-            input.addEventListener('input', function() {
-                clearTimeout(autosaveTimeout);
-                autosaveTimeout = setTimeout(() => {
-                    saveFormData(form);
-                }, 2000); // Save after 2 seconds of inactivity
-            });
-        });
-
-        // Load saved data on page load
-        loadFormData(form);
-    }
-
-    function saveFormData(form) {
-        const formData = new FormData(form);
-        const data = {};
-        
-        for (let [key, value] of formData.entries()) {
-            data[key] = value;
-        }
-
-        localStorage.setItem('profile_draft', JSON.stringify(data));
-        
-        // Show subtle indicator
-        showAutoSaveIndicator();
-    }
-
-    function loadFormData(form) {
-        const savedData = localStorage.getItem('profile_draft');
-        if (!savedData) return;
-
-        try {
-            const data = JSON.parse(savedData);
-            
-            Object.keys(data).forEach(key => {
-                const field = form.querySelector(`[name="${key}"]`);
-                if (field && field.type !== 'file') {
-                    field.value = data[key];
-                }
-            });
-        } catch (e) {
-            console.log('Could not load saved form data');
-        }
-    }
-
-    function showAutoSaveIndicator() {
-        const indicator = document.createElement('div');
-        indicator.className = 'autosave-indicator';
-        indicator.innerHTML = '<i class="fas fa-check text-success"></i> Draft saved';
-        indicator.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: white;
-            padding: 10px 15px;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        `;
-        
-        document.body.appendChild(indicator);
-        
-        // Animate in
-        setTimeout(() => indicator.style.opacity = '1', 100);
-        
-        // Remove after delay
-        setTimeout(() => {
-            indicator.style.opacity = '0';
-            setTimeout(() => indicator.remove(), 300);
-        }, 2000);
-    }
-
-    // Profile Interaction Functions (for public profiles)
-    function setupProfileInteractions() {
-        // These functions are defined in the individual view files but can be enhanced here
-        
-        // Add loading states to interaction buttons
-        const interactionButtons = document.querySelectorAll('[onclick*="expressInterest"], [onclick*="connectWithInvestor"]');
-        
-        interactionButtons.forEach(button => {
-            const originalOnClick = button.getAttribute('onclick');
-            button.addEventListener('click', function() {
-                // Add loading state
-                const originalText = button.innerHTML;
-                button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
-                button.disabled = true;
+            let img = previewContainer.querySelector('img');
+            if (img) {
+                img.src = e.target.result;
+            } else {
+                // Create new image element
+                const newImg = document.createElement('img');
+                newImg.src = e.target.result;
+                newImg.alt = 'Preview';
+                newImg.className = 'rounded-circle border border-primary';
+                newImg.style.cssText = 'width: 120px; height: 120px; object-fit: cover;';
                 
-                // Reset after timeout (in case of error)
-                setTimeout(() => {
-                    if (button.disabled) {
-                        button.innerHTML = originalText;
-                        button.disabled = false;
-                    }
-                }, 5000);
-            });
-        });
+                previewContainer.innerHTML = '';
+                previewContainer.appendChild(newImg);
+            }
+        };
+        reader.readAsDataURL(file);
     }
 
-    // Utility Functions
-    function isValidEmail(email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    }
-
-    function isValidURL(url) {
-        try {
-            new URL(url);
-            return true;
-        } catch {
-            return false;
+    /**
+     * Setup tooltips for better user guidance
+     */
+    setupTooltips() {
+        // Initialize Bootstrap tooltips if available
+        if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
         }
     }
 
-    function formatFileSize(bytes) {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    }
-
-    // Enhanced profile form submission with progress indication
-    function enhanceFormSubmission() {
-        const profileForms = document.querySelectorAll('form[action*="profile"]');
-        
-        profileForms.forEach(form => {
-            form.addEventListener('submit', function(e) {
-                const submitButton = form.querySelector('button[type="submit"]');
-                if (submitButton) {
-                    const originalText = submitButton.innerHTML;
-                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Updating Profile...';
-                    submitButton.disabled = true;
-                    
-                    // Clear autosaved data on successful submission
-                    localStorage.removeItem('profile_draft');
-                }
+    /**
+     * Interactive elements for better UX
+     */
+    setupInteractiveElements() {
+        // Animate cards on hover
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+                this.style.transition = 'transform 0.3s ease';
             });
+
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+
+        // Smooth scroll for form sections
+        const formSections = document.querySelectorAll('.card[class*="border-"]');
+        formSections.forEach((section, index) => {
+            const header = section.querySelector('.card-header');
+            if (header) {
+                header.style.cursor = 'pointer';
+                header.addEventListener('click', () => {
+                    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
+            }
+        });
+    }
+}
+
+/**
+ * Profile interaction functions for public profiles
+ */
+class ProfileInteractions {
+    static expressInterest(startupId) {
+        if (!confirm('Express interest in this startup?')) return;
+        
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
+                         document.querySelector('input[name="_token"]')?.value;
+        
+        fetch(url('api/match/interest'), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': csrfToken
+            },
+            body: JSON.stringify({
+                startup_id: startupId,
+                action: 'express_interest'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Interest expressed successfully!', 'success');
+                
+                // Update button state
+                const btn = event.target.closest('button');
+                if (btn) {
+                    btn.innerHTML = '<i class="fas fa-check me-2"></i>Interest Sent';
+                    btn.classList.remove('btn-light', 'btn-primary');
+                    btn.classList.add('btn-success');
+                    btn.disabled = true;
+                }
+            } else {
+                showToast(data.message || 'Failed to express interest', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('An error occurred. Please try again.', 'error');
         });
     }
 
-    // Initialize enhanced form submission
-    enhanceFormSubmission();
+    static sendMessage(userId) {
+        // Placeholder for messaging system
+        showToast('Messaging feature will be available soon!', 'info');
+        
+        // TODO: When messaging system is implemented, redirect to conversation
+        // window.location.href = url('messages/conversation/' + userId);
+    }
 
-})();
+    static downloadDocument(documentUrl, documentName) {
+        // Track document downloads for analytics
+        try {
+            fetch(url('api/analytics/download'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    document_url: documentUrl,
+                    document_name: documentName
+                })
+            });
+        } catch (error) {
+            console.error('Analytics tracking failed:', error);
+        }
+
+        // Open document in new tab
+        window.open(documentUrl, '_blank');
+    }
+}
+
+/**
+ * Utility functions
+ */
+function url(path = '') {
+    const baseUrl = window.location.origin;
+    const basePath = window.location.pathname.split('/').slice(0, -1).join('/');
+    return baseUrl + basePath + '/' + path.replace(/^\//, '');
+}
+
+function showToast(message, type = 'info') {
+    // Use the global toast function if available
+    if (typeof window.showToast === 'function') {
+        window.showToast(message, type);
+        return;
+    }
+
+    // Fallback to console log if toast system not available
+    console.log(`${type.toUpperCase()}: ${message}`);
+    
+    // Simple alert fallback for important messages
+    if (type === 'error') {
+        alert('Error: ' + message);
+    }
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize profile manager
+    new ProfileManager();
+    
+    // Make functions globally available
+    window.expressInterest = ProfileInteractions.expressInterest;
+    window.sendMessage = ProfileInteractions.sendMessage;
+    window.downloadDocument = ProfileInteractions.downloadDocument;
+    
+    // Show any pending toast messages
+    if (typeof window.pendingToastMessage !== 'undefined') {
+        showToast(window.pendingToastMessage, window.pendingToastType || 'info');
+        delete window.pendingToastMessage;
+        delete window.pendingToastType;
+    }
+});
+
+// Export for module usage
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { ProfileManager, ProfileInteractions };
+}

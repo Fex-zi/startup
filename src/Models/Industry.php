@@ -63,4 +63,38 @@ class Industry extends BaseModel
         
         return $this->db->fetchAll($sql, [$limit]);
     }
+
+    /**
+     * FIXED: Get industry names by IDs for displaying preferred industries
+     */
+    public function getIndustryNamesByIds($industryIds)
+    {
+        if (empty($industryIds) || !is_array($industryIds)) {
+            return [];
+        }
+        
+        // Sanitize the IDs
+        $sanitizedIds = array_filter($industryIds, 'is_numeric');
+        if (empty($sanitizedIds)) {
+            return [];
+        }
+        
+        $placeholders = str_repeat('?,', count($sanitizedIds) - 1) . '?';
+        $sql = "SELECT id, name FROM industries WHERE id IN ($placeholders) AND is_active = 1 ORDER BY name ASC";
+        
+        return $this->db->fetchAll($sql, $sanitizedIds);
+    }
+
+    /**
+     * FIXED: Get single industry name by ID
+     */
+    public function getIndustryNameById($industryId)
+    {
+        if (!is_numeric($industryId)) {
+            return null;
+        }
+        
+        $industry = $this->find($industryId);
+        return $industry ? $industry['name'] : null;
+    }
 }

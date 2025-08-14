@@ -40,12 +40,17 @@ $router->get('/logout', 'AuthController@logout');
 // Dashboard routes
 $router->get('/dashboard', 'DashboardController@index');
 
-// Profile routes
+// Profile routes - SECURITY ENHANCED
+$router->get('/profile', 'ProfileController@index'); // View own profile
+$router->get('/profile/settings', 'ProfileController@edit'); // Edit own profile
 $router->get('/profile/create', 'ProfileController@create');
 $router->post('/profile/store', 'ProfileController@store');
-$router->get('/profile/edit', 'ProfileController@edit');
 $router->post('/profile/update', 'ProfileController@update');
-$router->get('/profile/view/{id}', 'ProfileController@view');
+
+// Public profile viewing - SECURE
+$router->get('/startup/{slug}', 'ProfileController@viewStartupBySlug'); // Public startup profiles
+$router->get('/investor/{id}', 'ProfileController@viewInvestorPublic'); // Public investor profiles
+$router->get('/profile/view/{id}', 'ProfileController@viewSecure'); // Private access with permissions
 
 // Search routes
 $router->get('/search/startups', 'SearchController@startups');

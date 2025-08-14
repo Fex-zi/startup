@@ -245,4 +245,30 @@ class Startup extends BaseModel
         
         return $this->db->fetchAll($sql, [$limit]);
     }
+
+    /**
+     * Get similar startups based on industry, excluding current startup
+     */
+    public function getSimilarStartups($industryId, $excludeStartupId = null, $limit = 5)
+    {
+        $sql = "
+            SELECT s.*, u.first_name, u.last_name, i.name as industry_name
+            FROM startups s
+            JOIN users u ON s.user_id = u.id
+            LEFT JOIN industries i ON s.industry_id = i.id
+            WHERE s.industry_id = ?
+        ";
+        
+        $params = [$industryId];
+        
+        if ($excludeStartupId) {
+            $sql .= " AND s.id != ?";
+            $params[] = $excludeStartupId;
+        }
+        
+        $sql .= " ORDER BY s.created_at DESC LIMIT ?";
+        $params[] = $limit;
+        
+        return $this->db->fetchAll($sql, $params);
+    }
 }

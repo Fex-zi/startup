@@ -17,7 +17,7 @@
                         </div>
                     <?php endif; ?>
 
-                    <form method="POST" action="<?= url('profile/store') ?>">
+                    <form method="POST" action="<?= url('profile/store') ?>" enctype="multipart/form-data">
                         <input type="hidden" name="_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
                         
                         <div class="row">
@@ -64,6 +64,13 @@
                                     <?= htmlspecialchars($errors['bio'][0]) ?>
                                 </div>
                             <?php endif; ?>
+                        </div>
+
+                        <!-- FIXED: Added missing profile picture upload -->
+                        <div class="mb-3">
+                            <label for="profile_picture" class="form-label">Profile Picture</label>
+                            <input type="file" class="form-control" id="profile_picture" name="profile_picture" accept="image/*">
+                            <small class="text-muted">Upload your profile picture (PNG, JPG, max 2MB)</small>
                         </div>
 
                         <div class="mb-3">

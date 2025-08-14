@@ -17,7 +17,7 @@
                         </div>
                     <?php endif; ?>
 
-                    <form method="POST" action="<?= url('profile/store') ?>">
+                    <form method="POST" action="<?= url('profile/store') ?>" enctype="multipart/form-data">
                         <input type="hidden" name="_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
                         
                         <div class="row">
@@ -171,6 +171,30 @@
                                        name="website" 
                                        placeholder="https://yourcompany.com"
                                        value="<?= htmlspecialchars($old_input['website'] ?? '') ?>">
+                            </div>
+                        </div>
+
+                        <!-- FIXED: Added missing file upload sections -->
+                        <hr class="my-4">
+                        <h5 class="mb-3"><i class="fas fa-upload me-2"></i>Company Assets</h5>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="logo" class="form-label">Company Logo</label>
+                                <input type="file" class="form-control" id="logo" name="logo" accept="image/*">
+                                <small class="text-muted">Upload your company logo (PNG, JPG, max 2MB)</small>
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="pitch_deck" class="form-label">Pitch Deck</label>
+                                <input type="file" class="form-control" id="pitch_deck" name="pitch_deck" accept=".pdf,.ppt,.pptx">
+                                <small class="text-muted">Upload your pitch deck (PDF, PPT, max 10MB)</small>
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="business_plan" class="form-label">Business Plan</label>
+                                <input type="file" class="form-control" id="business_plan" name="business_plan" accept=".pdf,.doc,.docx">
+                                <small class="text-muted">Upload your business plan (PDF, DOC, max 10MB)</small>
                             </div>
                         </div>
 

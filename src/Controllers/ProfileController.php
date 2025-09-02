@@ -94,22 +94,42 @@ class ProfileController
     }
 
     /**
-     * SECURE: View profile with proper authorization checks
+     * 🚨 CRITICAL SECURITY FIX: Enhanced profile viewing with parameter validation
      */
     public function viewSecure($id = null)
     {
+        // SECURITY: Ensure user is logged in
         if (!isset($_SESSION['user_id'])) {
             header('Location: ' . url('login'));
             exit;
         }
 
-        $currentUserId = $_SESSION['user_id'];
+        // 🔥 CRITICAL FIX: Validate and sanitize the ID parameter
+        if ($id === null || !is_numeric($id)) {
+            error_log("SECURITY ALERT: Invalid profile ID attempted: " . var_export($id, true));
+            $_SESSION['toast_message'] = 'Invalid profile ID';
+            $_SESSION['toast_type'] = 'error';
+            header('Location: ' . url('dashboard'));
+            exit;
+        }
+
+        $currentUserId = (int)$_SESSION['user_id'];
         $targetUserId = (int)$id;
-        
-        // SECURITY: Only allow viewing own profile or public access with restrictions
+
+        // 🔥 CRITICAL FIX: Additional validation - ensure target user exists
+        $targetUser = $this->user->find($targetUserId);
+        if (!$targetUser || !$targetUser['is_active']) {
+            error_log("SECURITY ALERT: Attempted to view invalid/inactive user: {$targetUserId}");
+            $_SESSION['toast_message'] = 'Profile not found or inactive';
+            $_SESSION['toast_type'] = 'error';
+            header('Location: ' . url('dashboard'));
+            exit;
+        }
+
+        // SECURITY: Check permissions before proceeding
         if ($currentUserId !== $targetUserId) {
-            // Check if current user has permission to view this profile
             if (!$this->canViewProfile($currentUserId, $targetUserId)) {
+                error_log("SECURITY ALERT: Unauthorized profile access attempt. User {$currentUserId} tried to view {$targetUserId}");
                 $_SESSION['toast_message'] = 'You do not have permission to view this profile';
                 $_SESSION['toast_type'] = 'error';
                 header('Location: ' . url('dashboard'));
@@ -118,6 +138,10 @@ class ProfileController
         }
         
         $isOwnProfile = ($currentUserId === $targetUserId);
+        
+        // 🔥 CRITICAL FIX: Log profile access for security audit
+        error_log("Profile Access: User {$currentUserId} viewing profile {$targetUserId} (own: " . ($isOwnProfile ? 'yes' : 'no') . ")");
+        
         $this->viewProfile($targetUserId, $isOwnProfile);
     }
 
@@ -126,9 +150,28 @@ class ProfileController
      */
     public function viewStartupBySlug($slug)
     {
+        // 🔥 SECURITY FIX: Validate slug format
+        if (empty($slug) || !preg_match('/^[a-z0-9-]+$/', $slug)) {
+            error_log("SECURITY ALERT: Invalid startup slug attempted: " . var_export($slug, true));
+            $_SESSION['toast_message'] = 'Invalid startup identifier';
+            $_SESSION['toast_type'] = 'error';
+            header('Location: ' . url('search/startups'));
+            exit;
+        }
+
         $startup = $this->startup->findBy('slug', $slug);
         if (!$startup) {
             $_SESSION['toast_message'] = 'Startup not found';
+            $_SESSION['toast_type'] = 'error';
+            header('Location: ' . url('search/startups'));
+            exit;
+        }
+        
+        // 🔥 SECURITY FIX: Verify the associated user exists and is active
+        $user = $this->user->find($startup['user_id']);
+        if (!$user || !$user['is_active']) {
+            error_log("SECURITY ALERT: Startup slug {$slug} points to inactive/invalid user {$startup['user_id']}");
+            $_SESSION['toast_message'] = 'This startup profile is no longer available';
             $_SESSION['toast_type'] = 'error';
             header('Location: ' . url('search/startups'));
             exit;
@@ -149,11 +192,32 @@ class ProfileController
             exit;
         }
         
-        $this->viewProfile($id, false); // false = not own profile
+        // 🔥 SECURITY FIX: Validate investor ID
+        if (!is_numeric($id)) {
+            error_log("SECURITY ALERT: Invalid investor ID attempted: " . var_export($id, true));
+            $_SESSION['toast_message'] = 'Invalid investor ID';
+            $_SESSION['toast_type'] = 'error';
+            header('Location: ' . url('search/investors'));
+            exit;
+        }
+        
+        $targetUserId = (int)$id;
+        
+        // 🔥 SECURITY FIX: Verify the user exists and is an investor
+        $user = $this->user->find($targetUserId);
+        if (!$user || $user['user_type'] !== 'investor' || !$user['is_active']) {
+            error_log("SECURITY ALERT: Invalid investor access attempt for ID {$targetUserId}");
+            $_SESSION['toast_message'] = 'Investor not found or inactive';
+            $_SESSION['toast_type'] = 'error';
+            header('Location: ' . url('search/investors'));
+            exit;
+        }
+        
+        $this->viewProfile($targetUserId, false); // false = not own profile
     }
 
     /**
-     * Check if current user can view target profile
+     * 🔥 ENHANCED: Check if current user can view target profile
      */
     private function canViewProfile($currentUserId, $targetUserId)
     {
@@ -166,20 +230,25 @@ class ProfileController
         $targetUser = $this->user->find($targetUserId);
         
         if (!$currentUser || !$targetUser) {
+            error_log("Profile Access Denied: User not found. Current: {$currentUserId}, Target: {$targetUserId}");
             return false;
         }
+
+        // 🔥 SECURITY: Only allow cross-type viewing (investors ↔ startups)
+        $canView = false;
         
-        // Business rules: Investors can view startups, Startups can view investors
         if ($currentUser['user_type'] === 'investor' && $targetUser['user_type'] === 'startup') {
-            return true;
+            $canView = true;
+        } elseif ($currentUser['user_type'] === 'startup' && $targetUser['user_type'] === 'investor') {
+            $canView = true;
+        }
+
+        // Log access attempts for security monitoring
+        if (!$canView) {
+            error_log("Profile Access Denied: {$currentUser['user_type']} (ID: {$currentUserId}) attempted to view {$targetUser['user_type']} profile (ID: {$targetUserId})");
         }
         
-        if ($currentUser['user_type'] === 'startup' && $targetUser['user_type'] === 'investor') {
-            return true;
-        }
-        
-        // Same type users cannot view each other's private profiles
-        return false;
+        return $canView;
     }
 
     public function create()
@@ -320,14 +389,16 @@ class ProfileController
     }
 
     /**
-     * Core profile viewing logic with enhanced security
+     * 🔥 CRITICAL FIX: Enhanced profile viewing with data integrity checks
      */
-    private function viewProfile($id, $isOwnProfile)
+    private function viewProfile($userId, $isOwnProfile)
     {
         $currentUserId = $_SESSION['user_id'] ?? null;
         
-        $user = $this->user->getUserWithProfile($id);
-        if (!$user) {
+        // 🔥 CRITICAL FIX: Double-check user ID and get fresh data
+        $user = $this->user->find($userId);
+        if (!$user || !$user['is_active']) {
+            error_log("CRITICAL SECURITY ALERT: Attempted to view invalid/inactive user profile: {$userId}");
             $_SESSION['toast_message'] = 'Profile not found';
             $_SESSION['toast_type'] = 'error';
             header('Location: ' . url('dashboard'));
@@ -338,12 +409,21 @@ class ProfileController
         $showPrivateInfo = $isOwnProfile;
         $showContactInfo = $isOwnProfile || ($user['user_type'] === 'startup' && isset($_SESSION['user_type']) && $_SESSION['user_type'] === 'investor');
         $showDocuments = $isOwnProfile || (isset($_SESSION['user_type']) && $_SESSION['user_type'] === 'investor');
-        $showFullDetails = $isOwnProfile || $this->canViewProfile($currentUserId, $id);
+        $showFullDetails = $isOwnProfile || $this->canViewProfile($currentUserId, $userId);
 
         if ($user['user_type'] === 'startup') {
-            $startup = $this->startup->findBy('user_id', $id);
+            $startup = $this->startup->findBy('user_id', $userId);
             if (!$startup) {
                 $_SESSION['toast_message'] = 'Startup profile not found';
+                $_SESSION['toast_type'] = 'error';
+                header('Location: ' . url('dashboard'));
+                exit;
+            }
+
+            // 🔥 CRITICAL FIX: Verify profile ownership - prevents showing wrong profiles
+            if ($startup['user_id'] != $userId) {
+                error_log("CRITICAL SECURITY ALERT: Profile ownership mismatch! Expected user {$userId}, got profile for user {$startup['user_id']}");
+                $_SESSION['toast_message'] = 'Security error: Profile data mismatch';
                 $_SESSION['toast_type'] = 'error';
                 header('Location: ' . url('dashboard'));
                 exit;
@@ -375,9 +455,18 @@ class ProfileController
                 'csrf_token' => $this->security->generateCSRFToken()
             ]);
         } else {
-            $investor = $this->investor->findBy('user_id', $id);
+            $investor = $this->investor->findBy('user_id', $userId);
             if (!$investor) {
                 $_SESSION['toast_message'] = 'Investor profile not found';
+                $_SESSION['toast_type'] = 'error';
+                header('Location: ' . url('dashboard'));
+                exit;
+            }
+
+            // 🔥 CRITICAL FIX: Verify profile ownership - prevents showing wrong profiles
+            if ($investor['user_id'] != $userId) {
+                error_log("CRITICAL SECURITY ALERT: Profile ownership mismatch! Expected user {$userId}, got profile for user {$investor['user_id']}");
+                $_SESSION['toast_message'] = 'Security error: Profile data mismatch';
                 $_SESSION['toast_type'] = 'error';
                 header('Location: ' . url('dashboard'));
                 exit;

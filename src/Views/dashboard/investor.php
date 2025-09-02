@@ -301,42 +301,58 @@ $recent_startups = $recent_startups ?? [];
             </div>
         </div>
 
-        <!-- Investment Portfolio -->
+        <!-- Investment Progress -->
         <div class="dashboard-card mb-4">
             <div class="card-header-enhanced">
                 <h3 class="header-title">
-                    <i class="fas fa-chart-pie me-3"></i>Investment Portfolio
+                    <i class="fas fa-chart-pie me-3"></i>Investment Progress
                 </h3>
             </div>
             <div class="card-body-enhanced">
+                <?php 
+                // 🔥 CRITICAL FIX: Use REAL progress data for investors
+                $profileData = $progress_data['profile_completion'] ?? ['percentage' => 0, 'next_steps' => []];
+                $outreachData = $progress_data['outreach_progress'] ?? ['percentage' => 0, 'description' => 'Startup evaluations'];
+                $docData = $progress_data['documentation_progress'] ?? ['percentage' => 0, 'description' => 'Investment materials'];
+                ?>
+                
                 <div class="progress-item">
                     <div class="progress-label">
-                        <span>Portfolio Diversification</span>
-                        <span class="progress-value">75%</span>
+                        <span>Profile Completion</span>
+                        <span class="progress-value"><?= $profileData['percentage'] ?>%</span>
                     </div>
                     <div class="progress-bar-container">
-                        <div class="progress-bar" style="width: 75%"></div>
+                        <div class="progress-bar" style="width: <?= $profileData['percentage'] ?>%"></div>
                     </div>
                 </div>
                 
                 <div class="progress-item">
                     <div class="progress-label">
-                        <span>Active Deal Flow</span>
-                        <span class="progress-value">90%</span>
+                        <span><?= htmlspecialchars($outreachData['description']) ?></span>
+                        <span class="progress-value"><?= $outreachData['percentage'] ?>%</span>
                     </div>
                     <div class="progress-bar-container">
-                        <div class="progress-bar" style="width: 90%"></div>
+                        <div class="progress-bar" style="width: <?= $outreachData['percentage'] ?>%"></div>
                     </div>
                 </div>
                 
                 <div class="progress-item">
                     <div class="progress-label">
-                        <span>Due Diligence Queue</span>
-                        <span class="progress-value">45%</span>
+                        <span><?= htmlspecialchars($docData['description']) ?></span>
+                        <span class="progress-value"><?= $docData['percentage'] ?>%</span>
                     </div>
                     <div class="progress-bar-container">
-                        <div class="progress-bar" style="width: 45%"></div>
+                        <div class="progress-bar" style="width: <?= $docData['percentage'] ?>%"></div>
                     </div>
+                </div>
+                
+                <div class="next-steps">
+                    <h5>Next Steps:</h5>
+                    <ul class="steps-list">
+                        <?php foreach (array_slice($profileData['next_steps'], 0, 3) as $step): ?>
+                            <li><?= htmlspecialchars($step) ?></li>
+                        <?php endforeach; ?>
+                    </ul>
                 </div>
                 
                 <div class="investment-summary">

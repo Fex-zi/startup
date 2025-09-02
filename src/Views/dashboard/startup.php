@@ -308,42 +308,49 @@ $recent_investors = $recent_investors ?? [];
                 </h3>
             </div>
             <div class="card-body-enhanced">
+                <?php 
+                // 🔥 CRITICAL FIX: Use REAL progress data
+                $profileData = $progress_data['profile_completion'] ?? ['percentage' => 0, 'next_steps' => []];
+                $outreachData = $progress_data['outreach_progress'] ?? ['percentage' => 0, 'description' => 'Investor connections'];
+                $docData = $progress_data['documentation_progress'] ?? ['percentage' => 0, 'description' => 'Business documents'];
+                ?>
+                
                 <div class="progress-item">
                     <div class="progress-label">
                         <span>Profile Completion</span>
-                        <span class="progress-value">85%</span>
+                        <span class="progress-value"><?= $profileData['percentage'] ?>%</span>
                     </div>
                     <div class="progress-bar-container">
-                        <div class="progress-bar" style="width: 85%"></div>
+                        <div class="progress-bar" style="width: <?= $profileData['percentage'] ?>%"></div>
                     </div>
                 </div>
                 
                 <div class="progress-item">
                     <div class="progress-label">
                         <span>Investor Outreach</span>
-                        <span class="progress-value">60%</span>
+                        <span class="progress-value"><?= $outreachData['percentage'] ?>%</span>
                     </div>
                     <div class="progress-bar-container">
-                        <div class="progress-bar" style="width: 60%"></div>
+                        <div class="progress-bar" style="width: <?= $outreachData['percentage'] ?>%"></div>
                     </div>
                 </div>
                 
                 <div class="progress-item">
                     <div class="progress-label">
                         <span>Documentation</span>
-                        <span class="progress-value">40%</span>
+                        <span class="progress-value"><?= $docData['percentage'] ?>%</span>
                     </div>
                     <div class="progress-bar-container">
-                        <div class="progress-bar" style="width: 40%"></div>
+                        <div class="progress-bar" style="width: <?= $docData['percentage'] ?>%"></div>
                     </div>
                 </div>
                 
                 <div class="next-steps">
                     <h5>Next Steps:</h5>
                     <ul class="steps-list">
-                        <li>Upload pitch deck</li>
-                        <li>Add financial projections</li>
-                        <li>Complete team profiles</li>
+                        <?php foreach (array_slice($profileData['next_steps'], 0, 3) as $step): ?>
+                            <li><?= htmlspecialchars($step) ?></li>
+                        <?php endforeach; ?>
                     </ul>
                 </div>
             </div>

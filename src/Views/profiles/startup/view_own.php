@@ -86,43 +86,12 @@ $title = $title ?? ($startup['company_name'] ?? 'My Startup Profile');
         </div>
     </div>
 
-    <!-- Profile Completeness Alert -->
-    <?php 
-    $completenessScore = 0;
-    $missingItems = [];
-    
-    if (!empty($startup['description'])) $completenessScore += 20; else $missingItems[] = 'company description';
-    if (!empty($startup['logo_url'])) $completenessScore += 15; else $missingItems[] = 'company logo';
-    if (!empty($startup['pitch_deck_url'])) $completenessScore += 25; else $missingItems[] = 'pitch deck';
-    if (!empty($startup['business_plan_url'])) $completenessScore += 25; else $missingItems[] = 'business plan';
-    if (!empty($startup['website'])) $completenessScore += 15; else $missingItems[] = 'website URL';
-    ?>
-    
-    <?php if ($completenessScore < 100): ?>
+    <!-- 🔥 CRITICAL FIX: Profile Completeness Widget (using real data) -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="alert alert-warning">
-                <div class="d-flex align-items-center">
-                    <div class="me-3">
-                        <i class="fas fa-chart-pie fa-2x"></i>
-                    </div>
-                    <div class="flex-grow-1">
-                        <h5 class="alert-heading mb-1">Profile Completeness: <?= $completenessScore ?>%</h5>
-                        <p class="mb-2">Complete your profile to attract more investors!</p>
-                        <small class="text-muted">
-                            Missing: <?= implode(', ', $missingItems) ?>
-                        </small>
-                    </div>
-                    <div>
-                        <a href="<?= url('profile/edit') ?>" class="btn btn-warning">
-                            <i class="fas fa-plus me-1"></i>Complete Profile
-                        </a>
-                    </div>
-                </div>
-            </div>
+            <?= render_profile_completion_widget($user['id'], $user['user_type']) ?>
         </div>
     </div>
-    <?php endif; ?>
 
     <div class="row">
         <!-- Main Content -->

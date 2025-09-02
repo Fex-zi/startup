@@ -9,6 +9,7 @@ use Models\Investor;
 use Models\Industry;
 use Models\MatchModel;
 use Services\MatchingService;
+use Utils\ProfileCalculator;
 
 class DashboardController
 {
@@ -72,6 +73,9 @@ class DashboardController
                 exit;
             }
 
+            // 🔥 CRITICAL FIX: Get real profile progress data
+            $progressData = ProfileCalculator::getProgressData($user['id'], 'startup');
+
             // Get matches for this startup - safe approach
             $matches = [];
             $matchStats = [
@@ -111,7 +115,8 @@ class DashboardController
                 'matches' => array_slice($matches, 0, 5), // Show top 5 matches
                 'match_stats' => $matchStats,
                 'recent_investors' => $recentInvestors,
-                'industries' => $industries
+                'industries' => $industries,
+                'progress_data' => $progressData  // 🔥 REAL profile data
             ]);
         } catch (Exception $e) {
             error_log("Startup dashboard error: " . $e->getMessage());
@@ -129,6 +134,9 @@ class DashboardController
                 header('Location: ' . url('profile/create'));
                 exit;
             }
+
+            // 🔥 CRITICAL FIX: Get real profile progress data
+            $progressData = ProfileCalculator::getProgressData($user['id'], 'investor');
 
             // Get matches for this investor - safe approach
             $matches = [];
@@ -169,7 +177,8 @@ class DashboardController
                 'matches' => array_slice($matches, 0, 5), // Show top 5 matches
                 'match_stats' => $matchStats,
                 'recent_startups' => $recentStartups,
-                'industries' => $industries
+                'industries' => $industries,
+                'progress_data' => $progressData  // 🔥 REAL profile data
             ]);
         } catch (Exception $e) {
             error_log("Investor dashboard error: " . $e->getMessage());
